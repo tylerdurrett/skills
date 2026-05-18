@@ -10,12 +10,12 @@ form of parent issue, already use a long-running integration branch
 (`feature/issue-<N>-*`) that task PRs target, with the feature branch
 itself merged to main only when the feature is done.
 
-ADR-0007 introduces a third level (tasks under multi-task slices)
-and consolidates the execution skills. To keep skill behavior uniform
-across the hierarchy, the rule for which branch a given issue's work
-lands on needs to be explicit. Without one, every skill rediscovers
-the per-level branching question (and the auto-executor in #110 has to
-encode it as conditional logic).
+With multi-task slices added as a third level under features, skill
+behavior needs to stay uniform across the hierarchy. The rule for
+which branch a given issue's work lands on has to be explicit;
+without one, every skill rediscovers the per-level branching question
+and any controller that orchestrates them has to encode it as
+conditional logic.
 
 ## Decision
 
@@ -52,8 +52,8 @@ recursive shape captured in tier-aware `/ship`.
   model, and removes the human review gate at parent-level promotion.
 - **Per-skill ad-hoc branch selection.** Each skill picks its own
   parent branch via heuristics. Works in isolation but means every
-  skill (and the controller loop in #110) re-derives the branching
-  rule. Bound to drift.
+  skill (and any controller orchestrating them) re-derives the
+  branching rule. Bound to drift.
 
 ## Consequences
 

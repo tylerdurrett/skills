@@ -69,7 +69,7 @@ Stop and tell the user clearly when any of these hold. Do not improvise.
 - **Closed spec.** `state` is `CLOSED`. Exit.
 - **No size label.** Spec carries none of `size:initiative` / `size:feature` / `size:slice` / `size:task`. Tell the user to run `/triage <N>` first.
 - **Body lacks the tier's required forward-coverage section.** Per the table below. Tell the user to re-run `/to-spec` (which writes the section by template) or hand-add the section before re-running.
-- **Non-issue argument.** A branch name, a file path, a PR URL. Refuse politely and tell them the shape: `/audit #<N>` against an open size-labeled spec. The `.plans/` substrate is gone (per [ADR-0007](../../../docs/adr/0007-decomposition-in-native-sub-issues.md)); a path argument is almost certainly a stale habit.
+- **Non-issue argument.** A branch name, a file path, a PR URL. Refuse politely and tell them the shape: `/audit #<N>` against an open size-labeled spec. Decomposition lives on the tracker as native sub-issues, not as files in a `.plans/` directory; a path argument is almost certainly a stale habit.
 
 | Mode       | Required body section          |
 | ---------- | ------------------------------ |

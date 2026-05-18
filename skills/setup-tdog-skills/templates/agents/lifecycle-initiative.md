@@ -20,7 +20,7 @@ north-star (docs/north-star.md)
                            └── PR
 ```
 
-Concurrent initiatives are normal. Two unrelated bodies of work (e.g. a transcription-editing initiative and a docs-system initiative) can run in parallel without conflict; they share no state.
+Concurrent initiatives are normal. Two unrelated bodies of work (e.g. a billing-rewrite initiative and a docs-system initiative) can run in parallel without conflict; they share no state.
 
 ## Lifecycle states
 

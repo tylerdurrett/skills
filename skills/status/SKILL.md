@@ -123,7 +123,7 @@ Write four sections in this order. Skip a section entirely if it has nothing mea
 
 ### Lead paragraph (no heading)
 
-One or two sentences naming the active feature(s) being built, with a sense of overall progress. Use the feature title from the tracker. If active initiatives exist, mention each by number and title alongside the active features so the lead surfaces both layers of context (e.g., "You're shipping the transcription feature (#82) under the broader **Asset platform v2 initiative (#50)**."). If there are no active initiatives, the lead reads without that clause; no sentinel line, silence is the right default. If there's no active feature, the lead changes shape: "No feature work in flight at the moment" or similar.
+One or two sentences naming the active feature(s) being built, with a sense of overall progress. Use the feature title from the tracker. If active initiatives exist, mention each by number and title alongside the active features so the lead surfaces both layers of context (e.g., "You're shipping the csv-export feature (#82) under the broader **Reporting initiative (#50)**."). If there are no active initiatives, the lead reads without that clause; no sentinel line, silence is the right default. If there's no active feature, the lead changes shape: "No feature work in flight at the moment" or similar.
 
 ### `## Recently shipped`
 

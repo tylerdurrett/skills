@@ -30,8 +30,7 @@
 # include meaningful tooling work; roll up minor skill churn).
 #
 # This script is the place where filter rules accrete. Add a new rule by
-# extending the jq program below; tests in sibling slice #175 will cover
-# each rule with fixture inputs.
+# extending the jq program below.
 
 set -euo pipefail
 

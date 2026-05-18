@@ -66,7 +66,7 @@ Stop and tell the user clearly when any of these hold. Do not guess, do not impr
 
 If the body lacks `## Out of Scope` (or `## Out of scope`, case varies by template), continue with the forward (coverage) check only. Note the negative-check skip in the conversation's opening line so the user knows the run was partial. The `## Findings` block at the end is unchanged in shape, just absent any out-of-scope-drift bullets.
 
-If the user passes a non-issue argument (a branch name, a file path, a PR URL), refuse politely and tell them the shape: `/check #<N>` against an open size-labeled spec. The `.plans/` substrate is gone (per [ADR-0007](../../../docs/adr/0007-decomposition-in-native-sub-issues.md)); a path argument is almost certainly a stale habit.
+If the user passes a non-issue argument (a branch name, a file path, a PR URL), refuse politely and tell them the shape: `/check #<N>` against an open size-labeled spec. Decomposition lives on the tracker as native sub-issues, not as files in a `.plans/` directory; a path argument is almost certainly a stale habit.
 
 ## Fetching children
 

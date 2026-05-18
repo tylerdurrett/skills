@@ -52,14 +52,14 @@ The translation rule has two flavors depending on what kind of change you're des
 - Commit SHAs of any length.
 - Conventional-commit prefixes (`feat(scope):`, `fix:`, `chore:`). Rewrite the title in plain English.
 - PR or issue numbers as primary objects ("PR #168 added X"). Numbers may appear as parenthetical references when truly necessary, but never as the subject of a sentence.
-- Slug forms (`asset-picker`, `tab-switcher`). Use plain words — "the asset picker", "the tab switcher".
+- Slug forms (`settings-panel`, `filter-bar`). Use plain words — "the settings panel", "the filter bar".
 - Phrases like "merged to main", "rebased", "fast-forward", "integration branch", "feature branch", "sub-issue rollup", "ahead/behind".
 
 **Do:**
 - Lead with the *thing being delivered*, not the git state.
 - Talk about features and what they do, not commits or PRs as objects.
 - Prefer "shipped" / "landed" over "merged"; "the work" / "the feature" over "the branch"; "next up" over "next pending row".
-- Be specific. "Three small polishes around the asset-picker thumbnails" beats "some asset-picker improvements."
+- Be specific. "Three small polishes around the settings-panel layout" beats "some settings-panel improvements."
 
 The skill instructs you to write fresh prose for each invocation based on what the data-gathering helper returns. Do not fill in a template.
 
@@ -84,7 +84,7 @@ The magnitude rule is the trust anchor. Stakeholders learn to read the lead phra
 **Past windows only.** Past-window recaps include a commit count near the lead, as a sense of pace. Examples:
 
 - "Today saw 12 commits go in across the project."
-- "This week we pushed 47 commits, mostly around the asset picker."
+- "This week we pushed 47 commits, mostly around the settings panel."
 
 On very quiet windows (1 to 2 commits) the count may be omitted in favor of pure description. On 3+ commits, include it. The `upcoming` window has no time bound and no commit count; do not invent one.
 
