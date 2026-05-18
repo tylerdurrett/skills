@@ -18,7 +18,7 @@ Several of the engineering skills below (`triage`, `execute`, `ship`, `audit`, `
 /setup-tdog-skills
 ```
 
-It walks you through three decisions (issue tracker, triage label vocabulary, single- vs multi-context domain docs), writes the canonical docs under `docs/agents/`, drops in ADR-0008, and adds an `## Agent skills` block to your `CLAUDE.md` / `AGENTS.md`. The non-tracker skills (`tdd`, `diagnose`, `grill-me`, `code-simplifier`, `skill-creator`, etc.) work standalone and don't need it.
+It walks you through two decisions (triage label vocabulary, single- vs multi-context domain docs), writes the canonical docs under `docs/agents/`, drops in ADR-0008, and adds an `## Agent skills` block to your `CLAUDE.md` / `AGENTS.md`. GitHub is the only tracker backend supported today; the workflow skills shell out to `gh issue *`. The non-tracker skills (`tdd`, `diagnose`, `grill-me`, `code-simplifier`, `skill-creator`, etc.) work standalone and don't need any setup.
 
 ## The skills
 
@@ -79,9 +79,6 @@ A four-tier flow — initiative → feature → slice → task — that publishe
 | [ai-sdk](skills/ai-sdk/) | Build features with the Vercel AI SDK (`generateText`, `streamText`, agents, RAG). |
 | [trigger-dev](skills/trigger-dev/) | Write and configure Trigger.dev v4 background tasks. |
 | [chrome-devtools](skills/chrome-devtools/) | Browser automation, perf analysis, and debugging via Puppeteer. |
-| [slack-notify](skills/slack-notify/) | Send messages to a configured Slack channel. |
-| [app-screenshot](skills/app-screenshot/) | Authenticated screenshots of a local dev app for visual debugging. *(Iterator TV–specific; will be generalised.)* |
-| [get-started](skills/get-started/) | macOS-friendly environment-setup walkthrough. *(Iterator TV–specific; will be generalised.)* |
 
 ## Credit
 

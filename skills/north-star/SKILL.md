@@ -48,7 +48,7 @@ Ask one question per section. Capture the user's answer verbatim into the corres
 
 Sections to interview, in order:
 
-1. **§1 The One-Liner** — _"In one sentence a stranger would understand: what is Iterator TV?"_
+1. **§1 The One-Liner** — _"In one sentence a stranger would understand: what is this project?"_
    - Reject multi-sentence answers.
    - Reject pure jargon ("AI-native media-velocity platform") — ask what they'd say to a friend at a coffee shop.
    - If they cannot say it in one sentence, the template's own prompt applies: _"you don't understand it yet."_ Help them strip until it fits.
@@ -56,15 +56,15 @@ Sections to interview, in order:
 2. **§2 Why This Matters (to me)** — _"What's the personal reason you care enough to keep going when this gets hard? Not the pitch — the truth. Give me 1–3 bullets."_
    - If the answer sounds like a marketing line, ask: _"But why do **you** care?"_
 
-3. **§3 Who It's For** — _"Name a real person or a sharp archetype. Not 'creators.' Not 'everyone.'"_
-   - Quote a sharper bar back if they go generic: _"Solo video editors building a multi-shot sequence who keep losing the thread between Frame.io and their NLE"_ — that's the bar. Adapt to whatever Iterator TV's actual user looks like.
+3. **§3 Who It's For** — _"Name a real person or a sharp archetype. Not 'small business owners.' Not 'everyone.'"_
+   - Quote a sharper bar back if they go generic: _"Solo bookkeepers running month-end close who keep losing the thread between their spreadsheet and the accounting system"_ — that's the bar. Adapt to whatever the project's actual user looks like.
 
 4. **§4 The Vision** — _"What does the world look like when this is working? Two or three paragraphs max."_
    - Wall of text? Ask them to cut.
    - One line? Ask what's actually different in the world.
 
 5. **§6 Open Questions** — _"What are 2–5 things you don't know yet? Naming them is half the work."_
-   - Empty is allowed but flag it: a project at the maturity of Iterator TV with zero open questions usually means the user hasn't sat with it long enough.
+   - Empty is allowed but flag it: any non-trivial project with zero open questions usually means the user hasn't sat with it long enough.
 
 Sections **not** interviewed during init — seeded with the template's empty structure:
 
@@ -73,7 +73,7 @@ Sections **not** interviewed during init — seeded with the template's empty st
 
 ### Step 4-init: Set the header
 
-- H1: `# Iterator TV — North Star`
+- H1: `# <Project Name> — North Star` (the user supplies the project name; ask before writing if it isn't obvious from the conversation, CLAUDE.md, or the repo's README).
 - `_Last reviewed: YYYY-MM-DD_` — today's date.
 - `_Status: 🌱 shaping_` by default. Ask only if the user wants a different status from the menu (`🌱 shaping`, `🔨 building`, `🚀 shipping`, `🔄 iterating`, `❄️ paused`).
 
@@ -172,7 +172,7 @@ A failed write surfaces a `Loud:` note with the error verbatim and stops — do 
 The template lives here, not in a separate file. When init mode writes `docs/north-star.md`, it uses this exact structure with the interviewed sections populated and the seeded sections empty.
 
 ```markdown
-# Iterator TV — North Star
+# <Project Name> — North Star
 
 > **One doc. Living. Edit on review. This is the thing you come back to.**
 
@@ -197,7 +197,7 @@ _The personal reason. The thing that makes you care enough to keep going when it
 
 ## 3. Who It's For
 
-_Name a real person or a sharp archetype. "Creators" is not an answer. "Solo video editors building a multi-shot sequence who keep losing the thread between Frame.io and their NLE" is._
+_Name a real person or a sharp archetype. "Small business owners" is not an answer. "Solo bookkeepers running month-end close who keep losing the thread between their spreadsheet and the accounting system" is._
 
 - [Populated by init mode from the §3 interview.]
 
@@ -246,7 +246,7 @@ Manual end-to-end checklist for this skill — what to run, what to inspect, wha
 1. **Pre-condition.** `docs/north-star.md` does not exist.
 2. **Run `/north-star`.** The skill confirms first-time setup, then walks the §1, §2, §3, §4, §6 interviews in order. It pushes back on vague answers (multi-sentence one-liners, marketing-tone "why", generic "everyone" audience).
 3. **Inspect the written file:**
-   - H1 is `# Iterator TV — North Star`.
+   - H1 is `# <Project Name> — North Star`, with the project name filled in.
    - `_Last reviewed:_` is today's date in `YYYY-MM-DD` format.
    - `_Status:_` line shows the *chosen single status* (e.g. `_Status: 🌱 shaping_`), not the full menu from the template.
    - Sections §1, §2, §3, §4, §6 contain the interviewed content verbatim.

@@ -172,7 +172,7 @@ For each sub-section in the inline plan:
 2. Run `pnpm typecheck`, `pnpm lint:fix`, `pnpm format:fix`. Resolve issues.
 3. Run `/simplify` on the changes.
 4. Stage and commit with a message scoped to the sub-section. Convention:
-   - Subject: `<type>(<scope>): <sub-section title>`, e.g. `fix(frameio): request media_links.thumbnail include on V4 children endpoint`.
+   - Subject: `<type>(<scope>): <sub-section title>`, e.g. `fix(billing): include tax line in invoice subtotal calculation`.
    - Optional body: one or two lines if non-obvious; otherwise omit.
 
 Do not bundle multiple sub-sections into one commit. The 1:1 mapping is what makes review and bisect tractable.

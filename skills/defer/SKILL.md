@@ -50,8 +50,8 @@ If a claim doesn't survive verification, drop it. If most claims fail, stop and 
 
 Group findings by **what package or seam they touch**. The natural grain:
 
-- "Centralize X helpers in @kit/Y" — when multiple findings all argue for the same destination package.
-- "Extract shared X to @kit/shared" — when findings cluster around a single utility seam.
+- "Centralize X helpers in `<destination-package>`" — when multiple findings all argue for the same destination package.
+- "Extract shared X to a common module" — when findings cluster around a single utility seam.
 - One finding per issue when they don't share a destination.
 
 Default to grouping. Splintering N findings into N issues makes triage death-by-a-thousand-cuts; one mega-issue makes the work undismissable. The right size is "one focused PR could land all of this."
@@ -74,7 +74,7 @@ Iterate until the user approves. Skip this step only if there's exactly one find
 For each approved issue, run `gh issue create` with:
 
 - **Labels:** `needs-triage,cleanup` — both are required. `needs-triage` puts it in the normal triage flow; `cleanup` flags it as housekeeping for periodic sweeps.
-- **Title:** action-oriented and concrete. "Centralize X in @kit/Y" beats "X is duplicated."
+- **Title:** action-oriented and concrete. "Centralize X in `<destination-package>`" beats "X is duplicated."
 - **Body:** use the template below. The "Surfaced by:" line is required so future-you can recover the context.
 
 Use a HEREDOC for the body so markdown formatting is preserved. After each `gh` call, surface the returned issue URL to the user.
@@ -88,8 +88,8 @@ Pluralise the outcome line by count (`Filed one cleanup spec.` / `Filed two clea
 ```
 Filed two cleanup specs.
 
-- https://github.com/version47/iterator-tv/issues/37 (Centralize Postgres + JSON helpers in @kit/shared)
-- https://github.com/version47/iterator-tv/issues/38 (Consolidate storage-provider helpers in @kit/assets/storage)
+- https://github.com/<owner>/<repo>/issues/37 (Centralize Postgres + JSON helpers in the shared utilities package)
+- https://github.com/<owner>/<repo>/issues/38 (Consolidate storage-provider helpers)
 
 Stop.
 ```

@@ -186,7 +186,7 @@ A failed write surfaces a `Loud:` note with the error verbatim and stops — do 
 The template lives here, not in a separate file. Init mode writes `docs/roadmap.md` using this exact structure with `_Last reviewed:_` set to today and the four sections empty under their italic prompts. The italic prompt under each H2 is part of the template — it helps future reviews and stays in the file.
 
 ```markdown
-# Iterator TV — Roadmap
+# <Project Name> — Roadmap
 
 > **One doc. Living. Edit on review. The capacity-honest sequencing of bets between the north star and the epics.**
 
@@ -234,7 +234,7 @@ Manual end-to-end checklist for this skill — what to run, what to inspect, wha
 1. **Pre-condition.** `docs/roadmap.md` does not exist.
 2. **Run `/roadmap-review`.** The skill confirms first-time setup, writes the four-section skeleton, then walks the permissive seed pass.
 3. **Inspect the written skeleton (after Step 3-init):**
-   - H1 is `# Iterator TV — Roadmap`.
+   - H1 is `# <Project Name> — Roadmap`, with the project name filled in.
    - `_Last reviewed:_` is today's date in `YYYY-MM-DD` format.
    - **No** `_Status:_` line.
    - The italic placeholder preamble paragraph is present under the `---` divider.

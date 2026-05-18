@@ -124,7 +124,7 @@ Follow the three-block template:
 ```
 Decomposed <tier> #<P> into N <child-tier>s (#<X>–#<Y>).
 
-- https://github.com/version47/iterator-tv/issues/<P>
+- https://github.com/<owner>/<repo>/issues/<P>
 - new <child-tier>s: #<X>, #<X+1>, ..., #<Y>
 
 > Next step: `/check #<P>`. Verify the decomposition covers what the spec promised before triaging children. Reach for `/audit #<P>` when the cost of a flawed decomposition is high.
@@ -137,7 +137,7 @@ Use plain words for `<tier>` and `<child-tier>` (feature, slice, task). No `size
 Running `/decompose` against a spec that already has open children is supported. In Step 6, list existing open children first:
 
 ```bash
-gh issue list --search "parent-issue:version47/iterator-tv#<P> is:open"
+gh issue list --search "parent-issue:<owner>/<repo>#<P> is:open"
 ```
 
 Skip creating any child whose title exactly matches an existing open child. Append new children after the existing ones. Don't modify or close existing children. If the maintainer needs to remove a stale child, they close it manually.
@@ -151,9 +151,9 @@ Reusable procedure for attaching a child issue as a native sub-issue of its pare
 The REST endpoint expects the child's database `id` (numeric, e.g. `4377823883`), not its human-facing `number` (e.g. `72`). Resolve the `id` first, then POST:
 
 ```bash
-child_id=$(gh api repos/version47/iterator-tv/issues/<child-number> --jq .id)
+child_id=$(gh api repos/<owner>/<repo>/issues/<child-number> --jq .id)
 
-gh api -X POST repos/version47/iterator-tv/issues/<parent-number>/sub_issues \
+gh api -X POST repos/<owner>/<repo>/issues/<parent-number>/sub_issues \
   -F sub_issue_id="$child_id"
 ```
 

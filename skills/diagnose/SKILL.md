@@ -84,7 +84,7 @@ Tool preference:
 2. **Targeted logs** at the boundaries that distinguish hypotheses.
 3. Never "log everything and grep".
 
-For probes that need to call internal app modules against real local Supabase + a real third-party API (Frame.io, vault, etc.), reach for `apps/web/test-utils/probe-harness.ts` instead of hand-rolling dotenv loading and a service-role client. The harness gates execution on a per-probe env flag so the file stays inert in CI. See `apps/web/test-utils/README.md` for the run command and gotchas.
+For probes that need to call internal app modules against a real local database or third-party API, prefer a project-local probe harness (if one exists) that handles dotenv loading and credentialed-client setup, gating execution on a per-probe env flag so the file stays inert in CI. If no such harness exists, hand-rolling the setup is fine — just keep credentials out of source and avoid committing live probes.
 
 **Tag every debug log** with a unique prefix, e.g. `[DEBUG-a4f2]`. Cleanup at the end becomes a single grep. Untagged logs survive; tagged logs die.
 

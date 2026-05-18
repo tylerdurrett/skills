@@ -9,7 +9,7 @@ Write a short stakeholder-facing prose recap of what the team has done (`today`,
 
 This skill is read-only. It surveys the issue tracker and git history, filters out bookkeeping noise, and produces a paste-ready Markdown post. It does not commit, push, post anywhere, or mutate tracker state. The maintainer reads the output and decides what to do with it (typically: paste into Slack).
 
-The audience is teammates and stakeholders, mostly non-technical, who want a sense of where the team's time and attention has been going. Many of them are also users of Iterator TV, so user-facing product change is the load-bearing content of any recap. But teammates also care about meaningful internal work — workflow rebuilds, tooling that changes how the team plans or ships, infrastructure that unblocks the next stretch — even when it doesn't show up in the product yet. Each sentence has to land on something a thoughtful non-technical teammate would care about reading: a product change they would notice, a meaningful shift in how the team operates, or an honest note about where the week's effort went.
+The audience is teammates and stakeholders, mostly non-technical, who want a sense of where the team's time and attention has been going. Many of them are also users of the product, so user-facing product change is the load-bearing content of any recap. But teammates also care about meaningful internal work — workflow rebuilds, tooling that changes how the team plans or ships, infrastructure that unblocks the next stretch — even when it doesn't show up in the product yet. Each sentence has to land on something a thoughtful non-technical teammate would care about reading: a product change they would notice, a meaningful shift in how the team operates, or an honest note about where the week's effort went.
 
 ## Hard rules
 
@@ -24,17 +24,17 @@ The audience is teammates and stakeholders, mostly non-technical, who want a sen
 
 The output is a short Slack-paste-ready post a stakeholder could read comfortably. Aim for warm, human, plainspoken — but to the point.
 
-**Use "we" voice.** "We shipped..." / "We finished..." / "Today we...". Not "the team", not "Iterator TV", not "the project". The recap is from the inside.
+**Use "we" voice.** "We shipped..." / "We finished..." / "Today we...". Not "the team", not the project's name, not "the project". The recap is from the inside.
 
 **Translate technical change into something a teammate would care about.** This is the central rule. For every candidate sentence, ask: *would a thoughtful non-technical teammate care about this if they read it over coffee?* If yes, write it as the thing they would care about. If no, drop it. Do not paraphrase mechanism into noise — silence is better than filler.
 
 The translation rule has two flavors depending on what kind of change you're describing:
 
 - For user-facing product change, translate mechanism into the experience the user would notice.
-  - **Good:** "Browsing your Frame.io tab now feels noticeably snappier on the first click."
-  - **Bad:** "We added a warm-prelude pass to the Frame.io browse server actions."
-  - **Good:** "Renders with a long voiceover no longer cut off mid-sentence."
-  - **Bad:** "We fixed a race condition in the audio mux step of the render pipeline."
+  - **Good:** "Switching between accounts now feels noticeably snappier on the first click."
+  - **Bad:** "We added a warm-prelude pass to the account-switch server actions."
+  - **Good:** "Long exports no longer cut off partway through."
+  - **Bad:** "We fixed a race condition in the chunk-flush step of the export pipeline."
 
 - For internal tooling and workflow change, translate mechanism into the shift in how the team operates or what it unblocks. Reserve this for work that meaningfully changes the day, not minor skill churn.
   - **Good:** "We reworked how we slice large bodies of work into trackable pieces, so big efforts plan and execute faster going forward."
@@ -59,7 +59,7 @@ The translation rule has two flavors depending on what kind of change you're des
 - Lead with the *thing being delivered*, not the git state.
 - Talk about features and what they do, not commits or PRs as objects.
 - Prefer "shipped" / "landed" over "merged"; "the work" / "the feature" over "the branch"; "next up" over "next pending row".
-- Be specific. "Three small polishes around the Frame.io thumbnail handling" beats "some Frame.io improvements."
+- Be specific. "Three small polishes around the asset-picker thumbnails" beats "some asset-picker improvements."
 
 The skill instructs you to write fresh prose for each invocation based on what the data-gathering helper returns. Do not fill in a template.
 
@@ -250,4 +250,4 @@ The skill's behavior is checked by hand against real activity, not automated tes
 - It does not persist anything between invocations. Every run re-queries from now using the chosen window.
 - It does not support calendar-anchored windows (no `--this-week`, no `--since-monday`). All past windows are trailing-from-now.
 - It does not run on a cron, react to webhooks, or schedule itself. The maintainer invokes it manually.
-- It does not generalize to other repos. The helper relies on `gh`'s automatic repo resolution against `version47/iterator-tv`.
+- It does not let you target a different repo. The helper relies on `gh`'s automatic repo resolution against whatever the current working directory's origin remote points at; run it from the repo you want to recap.

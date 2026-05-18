@@ -54,8 +54,8 @@ For tracker mechanics see [docs/agents/issue-tracker.md](../../../docs/agents/is
 6. **Attach as a native sub-issue (only when a parent was inferred).** Resolve the child's database `id` first, then POST, then prepend `**Part of:** #<P>` to the body:
 
    ```bash
-   child_id=$(gh api repos/version47/iterator-tv/issues/<N> --jq .id)
-   gh api -X POST repos/version47/iterator-tv/issues/<P>/sub_issues -F sub_issue_id="$child_id"
+   child_id=$(gh api repos/<owner>/<repo>/issues/<N> --jq .id)
+   gh api -X POST repos/<owner>/<repo>/issues/<P>/sub_issues -F sub_issue_id="$child_id"
    gh issue edit <N> --body-file -   # rewritten body with **Part of:** #<P> on the first line
    ```
 

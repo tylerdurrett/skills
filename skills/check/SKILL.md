@@ -133,14 +133,14 @@ For each item in `## Out of scope`, flag any task child whose body appears to sc
 
 The highest-value check. Every concrete claim about existing code in the slice body or any child body is a potential hallucination. Read the cited code and verify the claim holds.
 
-For every concrete assertion the slice or a child makes about existing code ("the V4 client at `packages/.../frameio-client.ts` exposes a rate-limited fetch", "`resolveFrameioUrl` returns `{ url, expiresAt }`", "`shots.primary_media_asset_id` already exists with `ON DELETE SET NULL`"), open the cited file and confirm. Don't just check the file exists; check the **claim** about the file.
+For every concrete assertion the slice or a child makes about existing code ("the API client at `packages/.../stripe-client.ts` exposes a rate-limited fetch", "`resolveCheckoutUrl` returns `{ url, expiresAt }`", "`orders.primary_payment_method_id` already exists with `ON DELETE SET NULL`"), open the cited file and confirm. Don't just check the file exists; check the **claim** about the file.
 
 Watch especially for:
 
 - **Hallucinated APIs.** Functions, methods, or modules named that don't exist, or exist with a different signature than the body implies.
 - **Wrong assumptions about behavior.** The body says module X does Y; reading the code shows it does Z. Common with "the existing helper handles caching/auth/rate-limiting" claims.
-- **Stale schema claims.** Column names, enum values, FK behaviors, RLS policies asserted to exist or behave a certain way. Check `apps/web/supabase/schemas/` against each claim.
-- **External-API hallucinations.** Bodies touching third-party SDKs (Frame.io, Supabase, AWS, Trigger.dev) sometimes invent endpoints or method names. Sanity-check against the SDK actually installed.
+- **Stale schema claims.** Column names, enum values, FK behaviors, RLS policies asserted to exist or behave a certain way. Check the project's schema directory against each claim.
+- **External-API hallucinations.** Bodies touching third-party SDKs (Stripe, Supabase, AWS, Trigger.dev) sometimes invent endpoints or method names. Sanity-check against the SDK actually installed.
 - **"Existing pattern" claims.** "Reuse the existing X pattern from Y". Open Y and confirm the pattern is there and shaped the way the body thinks.
 
 When in doubt, read the file.
