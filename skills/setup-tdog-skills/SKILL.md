@@ -8,13 +8,13 @@ disable-model-invocation: true
 
 Scaffold the per-repo configuration the tdog engineering skill set assumes:
 
-- **Issue tracker** — where specs (initiatives, features, slices, tasks) live (GitHub via `gh` by default; local markdown under `.scratch/` is also supported).
+- **Issue tracker** — where specs (initiatives, features, slices, tasks) live. tdog currently supports GitHub only; the workflow skills shell out to `gh issue *`. Other backends (local markdown, Linear, Jira, GitLab) are not supported today and would require adapter work in the consumer skills first.
 - **Triage labels** — the strings used for the canonical state vocabulary, including the `cleanup` category used by `/defer`.
 - **Domain docs** — where `CONTEXT.md` and ADRs live, and the consumer rules for reading them.
 
 Plus four fixed-shape documents that every workflow skill grep's against (not user-configurable), and ADR-0008 (referenced by `/execute` and `/ship` by exact path).
 
-This is a prompt-driven skill, not a deterministic script. Explore, present what you found, confirm with the user, then write. Assume the user does not know what these terms mean — each decision is preceded by a short explainer.
+This is a prompt-driven skill, not a deterministic script. Explore, present what you found, confirm with the user, then write. Assume the user does not know what these terms mean — each section is preceded by a short explainer.
 
 ## Process
 
@@ -29,37 +29,31 @@ ls -a
 ls docs 2>/dev/null
 ls docs/agents 2>/dev/null
 ls docs/adr 2>/dev/null
-ls .scratch 2>/dev/null
 ```
 
 Things to gather:
 
-- **Repo identity.** `gh repo view --json nameWithOwner --jq .nameWithOwner`. The result is the literal `<owner>/<repo>` string the templates will be rewritten with. If `gh` errors or the remote isn't GitHub, hold the question and resolve it in Section A.
+- **Repo identity.** `gh repo view --json nameWithOwner --jq .nameWithOwner`. The result is the literal `<owner>/<repo>` string the templates will be rewritten with. If `gh` errors or the remote isn't GitHub, surface this immediately — see the step 2 preamble for the halt condition.
 - **Memory files at the repo root.** Does `CLAUDE.md` exist? Does `AGENTS.md` exist? Both? Neither? If both exist, treat `CLAUDE.md` as canonical and prefer editing it; mention `AGENTS.md` to the user as a duplicate worth resolving.
 - **Existing `## Agent skills` block** in either file. If present, the skill updates it in place; don't append a duplicate.
-- **`CONTEXT.md`, `CONTEXT-MAP.md`** at the repo root. Their presence steers Section C's default.
+- **`CONTEXT.md`, `CONTEXT-MAP.md`** at the repo root. Their presence steers Section B's default.
 - **`docs/adr/`** — what numbered ADRs are already there? Specifically: does `0008-*.md` already exist? That collision matters for the ADR-0008 drop-in.
 - **`docs/agents/`** — does prior output already exist? If any of `README.md`, `triage-labels.md`, `issue-tracker.md`, `output-format.md`, `lifecycle-initiative.md`, or `domain.md` is already there, treat this as a re-run and skip the rewrite for the ones that are intact.
-- **`.scratch/`** — sign that a local-markdown convention is already in use; steers Section A's default.
 
 ### 2. Present findings and ask
 
-Summarise what's present and what's missing in two or three lines. Then walk the user through the three decisions **one at a time** — present a section, get the user's answer, then move to the next. Don't dump all three at once.
+Summarise what's present and what's missing in two or three lines.
+
+**Before any decisions: confirm the GitHub backend.** Every workflow skill currently shells out to `gh issue *`. The setup writes [issue-tracker.md](./templates/agents/issue-tracker.md) verbatim against this backend; other trackers (local markdown, Linear, Jira, GitLab) need adapter work in the consumer skills first and are not supported today.
+
+- If `gh repo view --json nameWithOwner` succeeded in step 1 and the user is happy with GitHub Issues for specs, proceed.
+- If `gh` isn't installed, or the remote isn't GitHub, or the user wants a different backend, **stop**. Tell them the setup currently only supports GitHub, ask whether they'd like to keep going (and configure GitHub) or wait for adapter support. Don't write anything if they wait.
+
+Once the GitHub backend is confirmed, walk the user through the two remaining decisions **one at a time** — present a section, get the user's answer, then move to the next. Don't dump both at once.
 
 Each section starts with a short explainer (what it is, why these skills need it, what changes if they pick differently). Then show the choices and the default.
 
-#### Section A — Issue tracker
-
-> **Explainer.** The "issue tracker" is where specs live. Every tier in the hierarchy — initiative, feature, slice, task — is a spec on the tracker. Skills like `/to-spec`, `/triage`, `/decompose`, `/execute`, `/ship`, `/defer`, and `/status` read from and write to it; they need to know whether to call `gh issue *` or to write a markdown file under `.scratch/`. Pick the place you actually track work for this repo.
-
-Default posture: the tdog skills were designed for GitHub. If a `git remote` points at GitHub and `gh repo view` succeeds, propose that. If not (or if the user prefers), offer:
-
-- **GitHub** *(default when the remote is GitHub)* — specs live as GitHub issues; uses the `gh` CLI; sub-issues link parents to children natively. Writes [issue-tracker.md](./templates/agents/issue-tracker.md) verbatim.
-- **Local markdown** — specs live as files under `.scratch/<NNNN>-<slug>.md`. Good for solo work, prototypes, repos without a GitHub remote. Writes [issue-tracker-local-markdown.md](./templates/agents/issue-tracker-local-markdown.md) under the canonical filename. **Warn the user** that the workflow skills currently shell out to `gh` and will not function against `.scratch/` until they're patched; the file convention is what's being scaffolded today.
-
-If the user describes a third option (Linear, Jira), record it as freeform prose in `docs/agents/issue-tracker.md` and note that, like local-markdown, the skills will need adapter work before they reach the new backend.
-
-#### Section B — Triage label vocabulary
+#### Section A — Triage label vocabulary
 
 > **Explainer.** When `/triage` processes a spec, it moves it through a state machine — needs evaluation, needs grilling, needs info, ready for an AFK agent, ready for a human, deferred, won't fix — and assigns one of those states as a label. It also recognises a `cleanup` category label that `/defer` files when out-of-scope housekeeping work surfaces during another task. To do its job, `/triage` needs the label *strings* to match what's actually in your tracker. If your repo already uses different label names (e.g. `bug:triage` instead of `needs-triage`), map them here so the skill applies the right ones instead of creating duplicates.
 
@@ -81,7 +75,7 @@ Default: each role's string equals its name. Ask the user only whether they want
 
 > **Don't ask about the size tier labels.** `size:initiative`, `size:feature`, `size:slice`, `size:task` are **fixed strings** the workflow skills grep for. Renaming them would mean editing every skill that references them, which is out of scope for the setup. Document them as immutable in the template and move on.
 
-If the GitHub backend was picked in Section A, create the labels on the remote so `/triage` doesn't fail on first use:
+Create the labels on the remote so `/triage` doesn't fail on first use:
 
 ```bash
 gh label create needs-triage     --color FBCA04 --description "Maintainer needs to evaluate" 2>/dev/null
@@ -103,7 +97,7 @@ gh label create size:task        --color BFD4F2 --description "One PR's worth of
 
 `gh label create` 422's on duplicates; `2>/dev/null` keeps the run idempotent. If the user picked custom strings, substitute them in the call before running.
 
-#### Section C — Domain docs
+#### Section B — Domain docs
 
 > **Explainer.** Skills that explore the codebase (`/grill-with-docs`, `/execute`, `/decompose`, `/improve-codebase-architecture`, `/diagnose`, `/tdd`) read `CONTEXT.md` for the project's domain language and `docs/adr/` for past architectural decisions. They need to know whether the repo has one global context or multiple (e.g. a monorepo with per-package contexts) so they look in the right place.
 
@@ -130,7 +124,7 @@ The only question to raise: **if `docs/adr/0008-*.md` already exists** with a di
 Show the user a draft of:
 
 - The `## Agent skills` block to add to whichever of `CLAUDE.md` / `AGENTS.md` is being edited.
-- The contents of `docs/agents/issue-tracker.md` (the GitHub or local-markdown variant), `docs/agents/triage-labels.md`, `docs/agents/domain.md`.
+- The contents of `docs/agents/issue-tracker.md`, `docs/agents/triage-labels.md`, `docs/agents/domain.md`.
 - A note that `docs/agents/README.md`, `docs/agents/output-format.md`, `docs/agents/lifecycle-initiative.md`, and `docs/adr/0008-*.md` will be written verbatim from the templates with `<owner>/<repo>` substituted.
 
 Let them edit before writing. If they push back on something fixed (e.g. "do we really need lifecycle-initiative.md?"), the answer is yes — the workflow skills link to it by path and the link will 404 without it. Surface the reason and move on.
@@ -140,10 +134,10 @@ Let them edit before writing. If they push back on something fixed (e.g. "do we 
 #### 4a. Resolve `<owner>/<repo>`
 
 ```bash
-NAME_WITH_OWNER=$(gh repo view --json nameWithOwner --jq .nameWithOwner 2>/dev/null)
+NAME_WITH_OWNER=$(gh repo view --json nameWithOwner --jq .nameWithOwner)
 ```
 
-If `NAME_WITH_OWNER` is empty (no GitHub remote), ask the user for the placeholder string they want and use that instead. Every occurrence of the literal token `<owner>/<repo>` in the templates is replaced with this value before writing.
+This is the literal `<owner>/<repo>` string the templates will be rewritten with; every occurrence of the token in the templates is replaced with this value before writing. The step-2 gate already confirmed `gh repo view` works, so this should not fail — if it does, halt and surface the error rather than guessing.
 
 #### 4b. Pick the memory file to edit
 
@@ -164,7 +158,7 @@ The engineering skill set under `~/.claude/skills/` (or wherever the `skills@lat
 
 ### Issue tracker
 
-[One-line summary of where specs live and how skills interact with the tracker]. See [docs/agents/issue-tracker.md](docs/agents/issue-tracker.md).
+Specs (initiatives, features, slices, tasks) live as GitHub issues on `<owner>/<repo>`; workflow skills shell out to `gh issue *`. See [docs/agents/issue-tracker.md](docs/agents/issue-tracker.md).
 
 ### Triage labels
 
@@ -187,21 +181,21 @@ Initiatives differ from features and slices in that they have no integration bra
 Every workflow skill that produces a durable artifact ends with the three-block template (outcome, links, next step) in [docs/agents/output-format.md](docs/agents/output-format.md). Voice rules apply to all skills, including the report-is-output exceptions.
 ```
 
-The bracketed summaries get filled in based on the user's Section A / B / C answers.
+The bracketed summaries in the Triage labels and Domain docs subsections get filled in based on the user's Section A / B answers.
 
 #### 4d. Write the docs
 
 For each path, copy the template verbatim, then run a literal substitution `<owner>/<repo>` → `$NAME_WITH_OWNER` across the file content before writing. Templates live at `skills/setup-tdog-skills/templates/`; the destinations are inside the user's repo.
 
-| Destination                                       | Source template                                                 | Conditional? |
-| ------------------------------------------------- | --------------------------------------------------------------- | ------------ |
-| `docs/agents/README.md`                           | `templates/agents/README.md`                                    | always       |
-| `docs/agents/issue-tracker.md`                    | `templates/agents/issue-tracker.md` (GitHub) **or** `templates/agents/issue-tracker-local-markdown.md` | Section A    |
-| `docs/agents/triage-labels.md`                    | `templates/agents/triage-labels.md` (apply any user label remap to the "What replaced what" table) | always (with edit) |
-| `docs/agents/output-format.md`                    | `templates/agents/output-format.md`                             | always       |
-| `docs/agents/lifecycle-initiative.md`             | `templates/agents/lifecycle-initiative.md`                      | always       |
-| `docs/agents/domain.md`                           | `templates/agents/domain.md` (multi-context edit if Section C picked it) | always (with edit if multi-context) |
-| `docs/adr/0008-issues-branch-from-parent-integration-branch.md` | `templates/adr/0008-issues-branch-from-parent-integration-branch.md` | always (renumber if 0008 already taken) |
+| Destination                                       | Source template                                                 | Notes |
+| ------------------------------------------------- | --------------------------------------------------------------- | ----- |
+| `docs/agents/README.md`                           | `templates/agents/README.md`                                    | verbatim |
+| `docs/agents/issue-tracker.md`                    | `templates/agents/issue-tracker.md`                             | verbatim (GitHub backend; the only one supported today) |
+| `docs/agents/triage-labels.md`                    | `templates/agents/triage-labels.md`                             | apply any Section A label remap to the "What replaced what" table |
+| `docs/agents/output-format.md`                    | `templates/agents/output-format.md`                             | verbatim |
+| `docs/agents/lifecycle-initiative.md`             | `templates/agents/lifecycle-initiative.md`                      | verbatim |
+| `docs/agents/domain.md`                           | `templates/agents/domain.md`                                    | enumerate per-package layout if Section B picked multi-context |
+| `docs/adr/0008-issues-branch-from-parent-integration-branch.md` | `templates/adr/0008-issues-branch-from-parent-integration-branch.md` | renumber if 0008 already taken (see "What the user does NOT pick" above) |
 
 If `docs/agents/` or `docs/adr/` don't exist yet, create them. Idempotency rule: if a destination file already exists with non-trivial differences from the template, **do not silently overwrite** — show the user a diff and let them decide. Re-runs against a clean install should be no-ops.
 
@@ -220,7 +214,7 @@ Should return zero hits. If anything remains, the substitution missed it; fix an
 Tell the user the setup is complete. List the files that were written (or updated). Mention:
 
 - They can edit `docs/agents/*.md` directly later — the workflow skills read those files at runtime; changes take effect immediately.
-- Re-running `/setup-tdog-skills` is only necessary if they want to switch issue trackers, restart from scratch, or pick up a future revision of the templates.
+- Re-running `/setup-tdog-skills` is only necessary if they want to restart from scratch or pick up a future revision of the templates.
 - The natural next move is `/triage` (no args) for a survey, or `/to-spec` to capture the first idea.
 
 End-of-run output per [docs/agents/output-format.md](./templates/agents/output-format.md) (this skill produces durable artifacts, so the three-block template applies):
@@ -243,7 +237,7 @@ After a fresh run in a previously-unconfigured repo, all of the following should
 2. `ls docs/adr/` includes `0008-issues-branch-from-parent-integration-branch.md` (or the renumbered slot, with the references in `docs/agents/README.md` and `docs/agents/issue-tracker.md` updated to match).
 3. `CLAUDE.md` (or `AGENTS.md`) has an `## Agent skills` block linking to each doc plus a paragraph on the integration-branch convention.
 4. `grep -rn "<owner>/<repo>" docs/` returns nothing.
-5. If GitHub was picked: `gh label list` includes all seven state labels, `in-progress`, the four `size:*` labels, and the three category labels (including `cleanup`).
+5. `gh label list` includes all seven state labels, `in-progress`, the four `size:*` labels, and the three category labels (including `cleanup`).
 6. `/triage` and `/execute` against fresh specs run without complaining about missing doc paths.
 
 ## What this skill does NOT do
@@ -252,4 +246,4 @@ After a fresh run in a previously-unconfigured repo, all of the following should
 - It does not seed `CONTEXT.md` or any ADR other than 0008. `/grill-with-docs` is the producer for both.
 - It does not create initial specs or initiatives. `/to-spec` is the producer.
 - It does not bootstrap `docs/north-star.md` or `docs/roadmap.md`. Those are `/north-star` and `/roadmap-review` territory.
-- It does not patch local-markdown support into the workflow skills. Picking local-markdown writes the file convention; the consumer skills need adapter work before they read from `.scratch/`.
+- It does not support tracker backends other than GitHub. Local markdown, Linear, Jira, and GitLab would need adapter work in the consumer skills (`/triage`, `/decompose`, `/execute`, `/ship`, `/defer`, `/status`, `/to-spec`, `/audit`, `/check`, `/recap`) before they could be offered here. The local-markdown template file at `templates/agents/issue-tracker-local-markdown.md` is kept as forward-compatible scaffolding for that future work.
