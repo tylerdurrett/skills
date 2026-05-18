@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(pnpm bump:config:*)",
+      "Bash(npx bump:config:*)",
+      "Edit(file_path:**/.env)",
+      "Edit(file_path:**/.env.local)",
+      "Edit(file_path:**/.env.development)",
+      "Edit(file_path:**/.env.production)",
+      "Write(file_path:**/.env)",
+      "Write(file_path:**/.env.local)",
+      "Write(file_path:**/.env.development)",
+      "Write(file_path:**/.env.production)"
+    ]
+  }
+}

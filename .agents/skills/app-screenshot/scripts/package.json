@@ -1,0 +1,9 @@
+{
+  "name": "app-screenshot",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "@supabase/supabase-js": "^2.95.3",
+    "puppeteer": "^24.0.0"
+  }
+}
