@@ -43,9 +43,7 @@ issue explicitly.
 
 When all of a parent's children close, the parent's integration branch
 is ready to promote upward to its own parent's branch. This is the
-recursive shape captured in tier-aware `/ship` (the generalization of
-the prior `/close-prd`, `/close-parent`, `/merge-issue`, and
-`/close-issue`).
+recursive shape captured in tier-aware `/ship`.
 
 ## Alternatives rejected
 

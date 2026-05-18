@@ -83,7 +83,7 @@ The reader is the maintainer, not a CI bot. Prefer:
 - "shipped" / "landed" over "merged"
 - "the feature" / "the work" over "the branch"
 - "next up" over "next pending row"
-- The PRD/feature/slice title in plain words over the kebab-case slug
+- The feature/slice title in plain words over the kebab-case slug
 
 PR numbers as parentheticals are fine: "(PR #45)".
 

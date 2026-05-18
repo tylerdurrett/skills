@@ -1,11 +1,11 @@
 ---
 name: roadmap-review
-description: Maintain `docs/roadmap.md`, the project's capacity-honest sequencing of bets between the north star and `type:epic` issues — seed it on first run, review and update it on subsequent runs. Use when the user wants to touch the project's roadmap doc.
+description: Maintain `docs/roadmap.md`, the project's capacity-honest sequencing of bets between the north star and `size:initiative` issues — seed it on first run, review and update it on subsequent runs. Use when the user wants to touch the project's roadmap doc.
 ---
 
 # Roadmap Review
 
-`docs/roadmap.md` is the capacity-truth-telling layer between `docs/north-star.md` (unbounded vision) and `type:epic` issues (committed bodies of work). Its load-bearing function is the math of "given my bandwidth, here are my bets in order." The shape itself resists over-commitment: cap of 1 on `In flight`, 2–3 on `Next`, an unordered `Vibes backlog`, and an append-only `Shipped`.
+`docs/roadmap.md` is the capacity-truth-telling layer between `docs/north-star.md` (unbounded vision) and `size:initiative` issues (committed bodies of work). Its load-bearing function is the math of "given my bandwidth, here are my bets in order." The shape itself resists over-commitment: cap of 1 on `In flight`, 2–3 on `Next`, an unordered `Vibes backlog`, and an append-only `Shipped`.
 
 This skill maintains that doc. It does **not** silently rewrite anything — every edit goes through a propose-then-apply gate.
 
@@ -23,7 +23,7 @@ The two modes share a template (inlined below) and a fail-loudly posture: any I/
 - **Fail loudly.** If the doc cannot be read, the file cannot be written, or `gh` returns an error, surface a one-line note prefixed `Loud:` (matching `/ship`'s convention) and stop. Do not continue with partial state.
 - **Touch only `docs/roadmap.md`.** The skill writes to no other file. Tracker reads only — no labels, comments, or state changes on issues or PRs.
 - **No sticky-comment marker.** Unlike `/to-spec` (and the `/triage` bookkeeping pass that follows it), this skill posts no `<!-- progress-comment:* -->` anchor — `docs/roadmap.md` is itself the durable surface, so there's nothing on the tracker to anchor.
-- **Cap-of-1 on `In flight` is a soft warn, not a refusal.** If a second in-flight epic candidate would land in the proposed diff, surface a loud one-line warn ("the In-flight cap is 1; this would be a 2nd") and let the user override.
+- **Cap-of-1 on `In flight` is a soft warn, not a refusal.** If a second in-flight initiative candidate would land in the proposed diff, surface a loud one-line warn ("the In-flight cap is 1; this would be a 2nd") and let the user override.
 - **Edit scope is decided in the moment.** Prose, bullets, section membership, and ordering are all eligible for proposed edits — the agent and user negotiate scope during the review conversation, not via hardcoded rules. The only invariant is that nothing lands without the user confirming the diff.
 
 ## Step 1: Decide mode
@@ -54,11 +54,11 @@ Surface a one-line note: `Wrote skeleton docs/roadmap.md (Last reviewed YYYY-MM-
 
 Walk the seedable sections in order. For each, ask one question and accept "skip" as a valid answer:
 
-1. **`In flight`** — _"Is there a `type:epic` issue currently in flight you want to seed? If yes, give me the issue number (`#<N>`) and one-line title. Skip if not."_ Validate any provided number with `gh issue view <N> --json labels` to confirm it carries `type:epic`. If validation fails, surface a `Loud:` note and let the user re-answer or skip.
-2. **`Next`** — _"Any 1–3 sequenced epics for `Next`? Issue numbers + titles, in order. Skip if not."_ Same validation as `In flight`.
-3. **`Vibes backlog`** — _"Any hypothetical epics to seed? Plain bullets, no issue numbers. Skip if not."_
+1. **`In flight`** — _"Is there a `size:initiative` issue currently in flight you want to seed? If yes, give me the issue number (`#<N>`) and one-line title. Skip if not."_ Validate any provided number with `gh issue view <N> --json labels` to confirm it carries `size:initiative`. If validation fails, surface a `Loud:` note and let the user re-answer or skip.
+2. **`Next`** — _"Any 1–3 sequenced initiatives for `Next`? Issue numbers + titles, in order. Skip if not."_ Same validation as `In flight`.
+3. **`Vibes backlog`** — _"Any hypothetical initiatives to seed? Plain bullets, no issue numbers. Skip if not."_
 
-`Shipped` is not seeded by init mode; review mode populates it over time as epics close.
+`Shipped` is not seeded by init mode; review mode populates it over time as initiatives close.
 
 The user is **never expected to hand-author the file** — every section is skippable, and an empty doc is a valid outcome.
 
@@ -80,7 +80,7 @@ Read `docs/roadmap.md` once and hold the contents in memory — Step 6-review re
 
 Parse the line matching `^_Last reviewed: (\d{4}-\d{2}-\d{2})_$`. If absent or malformed, surface a `Loud:` note and stop — the doc is corrupt; the user must repair the header by hand before the survey can run.
 
-Also parse the In-flight bullet (if any) to extract the epic's `#<N>` for the In-flight survey query.
+Also parse the In-flight bullet (if any) to extract the initiative's `#<N>` for the In-flight survey query.
 
 ### Step 3-review: Run the parallel survey
 
@@ -88,40 +88,40 @@ Issue all queries in a single message as parallel Bash tool calls — the agent 
 
 ```bash
 LAST=<parsed-date>
-gh issue list --label "type:epic" --state closed --search "closed:>${LAST}" --json number,title,closedAt,stateReason
-gh issue list --label "type:epic" --state open --json number,title,labels
-gh issue list --label "type:prd" --state closed --search "closed:>${LAST}" --json number,title,closedAt
+gh issue list --label "size:initiative" --state closed --search "closed:>${LAST}" --json number,title,closedAt,stateReason
+gh issue list --label "size:initiative" --state open --json number,title,labels
+gh issue list --label "size:feature" --state closed --search "closed:>${LAST}" --json number,title,closedAt
 ```
 
-If an In-flight epic was parsed in Step 2-review, additionally fetch its body and comments so the scope-creep check has materialized-vs-candidate counts. Run this in the same parallel batch:
+If an In-flight initiative was parsed in Step 2-review, additionally fetch its body and comments so the scope-creep check has materialized-vs-candidate counts. Run this in the same parallel batch:
 
 ```bash
-IF_EPIC=<parsed-issue-number>
-gh issue view $IF_EPIC --json body,comments
+IF_INITIATIVE=<parsed-issue-number>
+gh issue view $IF_INITIATIVE --json body,comments
 ```
 
-Parse the `<!-- progress-comment:epic -->` sticky comment from the returned `comments` array (mirroring `/ship`'s parse): `- [ ] #<P> — <title>` rows are open materialized PRDs, `- [x] #<P> — <title>` rows are closed materialized PRDs. Cross-reference the open `#<P>` numbers against the `closed type:prd since LAST` survey to produce the "closed since last review" count for the In-flight epic. Parse the epic body's `## Candidate PRDs` section bullets to count remaining candidates.
+Parse the `<!-- progress-comment:initiative -->` sticky comment from the returned `comments` array (mirroring `/ship`'s parse): `- [ ] #<F> — <title>` rows are open materialized features, `- [x] #<F> — <title>` rows are closed materialized features. Cross-reference the open `#<F>` numbers against the `closed size:feature since LAST` survey to produce the "closed since last review" count for the In-flight initiative. Parse the initiative body's `## Candidate features` section bullets to count remaining candidates.
 
 Combine into a structured survey. Surface to the user as short bullets:
 
 ```
 Since YYYY-MM-DD:
-- Closed epics: #<N> <title> (reason: <completed|not_planned|null>), ...
-- Closed PRDs: #<N> <title>, ...
-- In-flight epic #<E> <title>:
-    - Materialized: <M> PRDs in progress comment (<closed-since-LAST> closed since LAST)
+- Closed initiatives: #<N> <title> (reason: <completed|not_planned|null>), ...
+- Closed features: #<N> <title>, ...
+- In-flight initiative #<I> <title>:
+    - Materialized: <M> features in progress comment (<closed-since-LAST> closed since LAST)
     - Candidates remaining in body: <C>
-- Open epics not anchored in roadmap: #<N> <title>, ...
+- Open initiatives not anchored in roadmap: #<N> <title>, ...
 - Roadmap entries with stale tracker state: <bullet>, ...
 ```
 
-If the survey returns nothing AND there is no In-flight epic to status-check, tell the user there's been no shipped tracker work since the last review and ask whether they still want a sanity-check pass on the four sections. If they decline, stop without writing — `_Last reviewed:_` stays at its current date until there's actually something to review.
+If the survey returns nothing AND there is no In-flight initiative to status-check, tell the user there's been no shipped tracker work since the last review and ask whether they still want a sanity-check pass on the four sections. If they decline, stop without writing — `_Last reviewed:_` stays at its current date until there's actually something to review.
 
 ### Step 4-review: Walk the four sections with targeted check-ins
 
-#### `## Shipped` — closed epics since last review
+#### `## Shipped` — closed initiatives since last review
 
-For each closed `type:epic` since the last-reviewed date, propose a default destination using the close-reason heuristic and **always confirm**:
+For each closed `size:initiative` since the last-reviewed date, propose a default destination using the close-reason heuristic and **always confirm**:
 
 - `stateReason == "completed"` → propose **move to `Shipped`** (preserve historical record).
 - `stateReason == "not_planned"` (or carries `wontfix` label) → propose **drop entirely** (don't pollute `Shipped` with abandoned work).
@@ -131,11 +131,11 @@ For each, ask the user to confirm or override. Capture the chosen destination. N
 
 #### `## In flight` — scope-creep check
 
-If there is an in-flight epic, surface its progress-comment state (materialized PRDs vs. candidate bullets remaining in body) and recent PRD activity (closed since last review; new since last review). Ask: _"Still on track? Scope creeping?"_
+If there is an in-flight initiative, surface its progress-comment state (materialized features vs. candidate bullets remaining in body) and recent feature activity (closed since last review; new since last review). Ask: _"Still on track? Scope creeping?"_
 
-The user may decide to move the epic to `Shipped`/`Next`/drop, narrow scope (which the user does manually on the epic itself; this skill doesn't touch the epic body), or leave it untouched — that's an in-conversation decision, not a hardcoded transition.
+The user may decide to move the initiative to `Shipped`/`Next`/drop, narrow scope (which the user does manually on the initiative itself; this skill doesn't touch the initiative body), or leave it untouched — that's an in-conversation decision, not a hardcoded transition.
 
-If `## In flight` is empty but the survey found a `type:epic` issue with `in-progress` label not anchored anywhere in the roadmap, flag it loudly here and let the conversation decide whether to add it.
+If `## In flight` is empty but the survey found a `size:initiative` issue with `in-progress` label not anchored anywhere in the roadmap, flag it loudly here and let the conversation decide whether to add it.
 
 If `## In flight` somehow has more than one bullet (existing drift, not a new addition), surface the loud cap-of-1 warn and let the user resolve in the diff.
 
@@ -147,7 +147,7 @@ No special reorder UX — the agent and user negotiate the new order in the conv
 
 #### `## Vibes backlog` — staleness sweep + additions
 
-Show the current entries. Walk them and ask whether each still feels current. For each, capture **keep**, **drop**, or **graduate** (graduate means: the user wants to convert this to a real `type:epic` issue via `/to-spec` — this skill does not run `/to-spec` itself, but it removes the bullet from the diff once the user confirms graduation, so `/to-spec`'s subsequent run lands cleanly).
+Show the current entries. Walk them and ask whether each still feels current. For each, capture **keep**, **drop**, or **graduate** (graduate means: the user wants to convert this to a real `size:initiative` issue via `/to-spec` — this skill does not run `/to-spec` itself, but it removes the bullet from the diff once the user confirms graduation, so `/to-spec`'s subsequent run lands cleanly).
 
 After the sweep, ask: _"Anything new to seed?"_ Capture additions.
 
@@ -155,7 +155,7 @@ After the sweep, ask: _"Anything new to seed?"_ Capture additions.
 
 During the section walks above, surface any roadmap↔tracker mismatch loudly. Drift never auto-resolves; the conversation decides.
 
-- A `type:epic` issue with `in-progress` label but no entry anywhere in the roadmap → flag and offer to add it (`In flight` if the cap allows; otherwise the conversation decides where it lands).
+- A `size:initiative` issue with `in-progress` label but no entry anywhere in the roadmap → flag and offer to add it (`In flight` if the cap allows; otherwise the conversation decides where it lands).
 - An `In flight` / `Next` entry whose referenced `#<N>` is closed on tracker → already covered by the Shipped/dropped check-in above.
 - An `In flight` / `Next` entry whose referenced `#<N>` is open but **not** labeled `in-progress` (for `In flight`) → flag loudly; the bullet may need moving back to `Vibes backlog`, or the tracker label may be stale.
 
@@ -188,29 +188,29 @@ The template lives here, not in a separate file. Init mode writes `docs/roadmap.
 ```markdown
 # <Project Name> — Roadmap
 
-> **One doc. Living. Edit on review. The capacity-honest sequencing of bets between the north star and the epics.**
+> **One doc. Living. Edit on review. The capacity-honest sequencing of bets between the north star and the initiatives.**
 
 _Last reviewed: YYYY-MM-DD_
 
 ---
 
-_Light prose framing the current strategic moment — the theme of the next several months, the epic in flight, the dependency chain in `Next`, anything sitting in `Vibes backlog` that's getting close to graduating. One paragraph. Replace this italic placeholder once you have something to say._
+_Light prose framing the current strategic moment — the theme of the next several months, the initiative in flight, the dependency chain in `Next`, anything sitting in `Vibes backlog` that's getting close to graduating. One paragraph. Replace this italic placeholder once you have something to say._
 
 ## In flight
 
-_Cap: 1 epic. Multiple in-flight epics is the failure mode this structure exists to prevent. Format: `- #<N> — <title>`._
+_Cap: 1 initiative. Multiple in-flight initiatives is the failure mode this structure exists to prevent. Format: `- #<N> — <title>`._
 
 ## Next
 
-_Sequenced 2–3 epics. The order is the bet — top-most goes next. Format: `- #<N> — <title>`._
+_Sequenced 2–3 initiatives. The order is the bet — top-most goes next. Format: `- #<N> — <title>`._
 
 ## Vibes backlog
 
-_Unordered hypothetical epics. No issue numbers; plain bullets. Drop entries that no longer feel current; add entries when they appear. Format: `- <one-line description>` (or `- **<theme>:** <description>` if a theme prefix helps scannability)._
+_Unordered hypothetical initiatives. No issue numbers; plain bullets. Drop entries that no longer feel current; add entries when they appear. Format: `- <one-line description>` (or `- **<theme>:** <description>` if a theme prefix helps scannability)._
 
 ## Shipped
 
-_Append-only, newest first. Populated by `/roadmap-review` as epics close with reason "completed". Format: `- #<N> — <title>`._
+_Append-only, newest first. Populated by `/roadmap-review` as initiatives close with reason "completed". Format: `- #<N> — <title>`._
 ```
 
 ## What this skill does NOT do
@@ -220,7 +220,7 @@ _Append-only, newest first. Populated by `/roadmap-review` as epics close with r
 - It does not refuse to break the cap-of-1 on `In flight`. It warns loudly and lets the user override.
 - It does not mirror the doc to a GH Discussion, Linear, or any other surface.
 - It does not auto-resolve drift between roadmap and tracker. Surfacing only.
-- It does not graduate Vibes-backlog entries to `type:epic` issues. That is `/to-spec`'s job; this skill removes the bullet from the diff once the user confirms graduation, so a follow-up `/to-spec` run lands cleanly.
+- It does not graduate Vibes-backlog entries to `size:initiative` issues. That is `/to-spec`'s job; this skill removes the bullet from the diff once the user confirms graduation, so a follow-up `/to-spec` run lands cleanly.
 - It does not modify `/to-spec`, `/ship`, or any other skill.
 - It does not touch `docs/north-star.md`, `docs/adr/`, or any tracker comment, label, or issue. Survey is read-only.
 - It does not retry failed writes or `gh` calls. Fail loudly, stop, let the user fix and re-invoke.
@@ -241,27 +241,27 @@ Manual end-to-end checklist for this skill — what to run, what to inspect, wha
    - Four sections in order: `## In flight`, `## Next`, `## Vibes backlog`, `## Shipped`. Each has its italic prompt and is otherwise empty.
 4. **Permissive seed pass.** Each section accepts "skip" as a valid answer. Skipping every section results in the skeleton being the final state — no diff prompt, no second write.
 5. **Seeded run.** Providing seed content for any section produces a unified diff. Confirming applies the diff in a single overwrite. Declining leaves the skeleton untouched.
-6. **Issue-number validation.** Providing a non-`type:epic` issue number for `In flight` or `Next` surfaces a `Loud:` note and offers a re-answer or skip; it does not silently accept the invalid reference.
+6. **Issue-number validation.** Providing a non-`size:initiative` issue number for `In flight` or `Next` surfaces a `Loud:` note and offers a re-answer or skip; it does not silently accept the invalid reference.
 7. **No other files were touched.** `git status` shows only `docs/roadmap.md` (and the skill files themselves, if this is the implementing PR).
 
 ### Review mode (file present)
 
 1. **Pre-condition.** `docs/roadmap.md` exists with a parseable `_Last reviewed: YYYY-MM-DD_` header.
-2. **Run `/roadmap-review`.** The skill parses the date, runs the parallel `gh` surveys (closed epics + open epics + closed PRDs since LAST + In-flight epic body/comments + linked PRDs if applicable), surfaces the structured summary.
-3. **Section walk.** The skill walks `Shipped` (closed-since-last-review epics with destination heuristic + confirm), `In flight` (scope-creep check), `Next` (reality check + reorder), `Vibes backlog` (staleness sweep + additions).
-4. **Drift detection.** In-progress epic with no roadmap entry → flagged and offered for placement. In-flight bullet whose epic is closed or no longer `in-progress` → flagged. Resolution decided in conversation.
+2. **Run `/roadmap-review`.** The skill parses the date, runs the parallel `gh` surveys (closed initiatives + open initiatives + closed features since LAST + In-flight initiative body/comments + linked features if applicable), surfaces the structured summary.
+3. **Section walk.** The skill walks `Shipped` (closed-since-last-review initiatives with destination heuristic + confirm), `In flight` (scope-creep check), `Next` (reality check + reorder), `Vibes backlog` (staleness sweep + additions).
+4. **Drift detection.** In-progress initiative with no roadmap entry → flagged and offered for placement. In-flight bullet whose initiative is closed or no longer `in-progress` → flagged. Resolution decided in conversation.
 5. **Cap-of-1 warn.** If a proposed diff would land a second bullet under `## In flight`, the skill surfaces a loud warn before asking "Apply this diff?" and the user can override.
-6. **Heuristic propose-then-confirm.** Closed epic with `stateReason == "completed"` → defaults to Shipped; `stateReason == "not_planned"` → defaults to drop; `stateReason == null` → defaults to Shipped. The user always confirms or overrides.
+6. **Heuristic propose-then-confirm.** Closed initiative with `stateReason == "completed"` → defaults to Shipped; `stateReason == "not_planned"` → defaults to drop; `stateReason == null` → defaults to Shipped. The user always confirms or overrides.
 7. **Diff proposal.** The skill shows a unified diff covering all section edits and the bumped `_Last reviewed:_`. **Does not write** before asking.
 8. **Confirm path.** Confirming applies the diff in a single overwrite. The new `_Last reviewed:_` is today's date. No other file changes.
 9. **Decline path.** Declining writes nothing. The doc on disk is byte-identical to before invocation.
-10. **Empty-survey path.** With no shipped tracker work and no In-flight epic to status-check, the skill says so and offers a sanity-check-only pass on the four sections. Declining stops cleanly with no write. A date-only `_Last reviewed:_` bump is a valid outcome when the user *did* sit with the doc but had nothing to change.
+10. **Empty-survey path.** With no shipped tracker work and no In-flight initiative to status-check, the skill says so and offers a sanity-check-only pass on the four sections. Declining stops cleanly with no write. A date-only `_Last reviewed:_` bump is a valid outcome when the user *did* sit with the doc but had nothing to change.
 
 ### Failure paths
 
 - **Corrupt header.** `_Last reviewed:_` line missing or malformed → surface a `Loud:` note and stop. No survey runs, no write occurs.
 - **`gh` failure.** Any survey command fails → surface a `Loud:` note with the error verbatim and stop. Do not continue with partial survey results.
 - **Write failure.** Disk error during the final overwrite → surface a `Loud:` note with the error verbatim and stop. The doc may be in a corrupt state — the user repairs by hand or re-invokes after fixing the underlying cause.
-- **Invalid seed reference (init mode).** Providing an issue number that isn't `type:epic` for `In flight`/`Next` surfaces a `Loud:` note and offers re-answer or skip. The skeleton remains untouched until valid input is captured.
+- **Invalid seed reference (init mode).** Providing an issue number that isn't `size:initiative` for `In flight`/`Next` surfaces a `Loud:` note and offers re-answer or skip. The skeleton remains untouched until valid input is captured.
 
 If any step surfaces drift, fix the skill in a follow-up rather than the issue — the skill is the source of truth.

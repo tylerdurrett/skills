@@ -87,21 +87,6 @@ Optional labels that describe what kind of work a spec represents, orthogonal to
 
 `cleanup` specs enter triage like any other (`needs-triage` first), but signal to the triager that the work is non-urgent housekeeping rather than user-facing change. `/triage cleanup` is a useful periodic sweep to keep the queue from rotting.
 
-## What replaced what
-
-For readers familiar with the previous label set:
-
-| Was             | Is now            |
-| --------------- | ----------------- |
-| `type:prd`      | `size:feature`    |
-| `type:epic`     | `size:initiative` |
-| `size:1pr`      | `size:task`       |
-| `size:multi-pr` | `size:slice`      |
-
-The `type:*` axis is gone entirely. Size is the only tier-defining label. The mental shift: every spec on the tracker has a size; bigger sizes decompose into smaller-sized children; tasks are the leaves that ship as PRs.
-
-Migration is progressive: per-skill rework PRs rename labels in the operations they perform. Issues that haven't been touched by a per-skill PR retain their old labels until then. `/triage` and `/status` recognize both vocabularies during the transition.
-
 ## Label inventory
 
 All seven state-axis labels, the `in-progress` lifecycle label, the four `size:*` labels, and the three category labels live on `<owner>/<repo>`. Edit the right-hand column above if labels are renamed.

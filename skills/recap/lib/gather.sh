@@ -2,8 +2,8 @@
 # Data-gathering helper for /recap.
 #
 # Resolves the time window for the requested period, runs read-only `gh`
-# and `git` queries, classifies issues by kind, gathers PRD context for
-# any closed PRDs or slices, pipes the result through the filter
+# and `git` queries, classifies issues by kind, gathers feature context
+# for any closed features or slices, pipes the result through the filter
 # predicate at lib/filter.sh, and prints the filtered JSON to stdout.
 #
 # Usage:
@@ -81,17 +81,18 @@ fetch_open_with_label() {
 }
 
 # fetch_in_progress_slices: print open `in-progress` issues that are
-# standard `size:multi-pr` slices (i.e. not PRDs or epics, both of which
-# also wear `in-progress` once `/decompose` runs), augmented with each
-# slice's parent issue number and child PR progress (`closed`/`total`).
-# The forward-looking closer (past windows) and the upcoming-window
-# composition both consume this. Per-slice round-trips are acceptable
-# because the number of in-progress slices is small (~0-5 at any time).
+# standard `size:slice` slices (i.e. not features or initiatives, both of
+# which also wear `in-progress` once `/decompose` runs), augmented with
+# each slice's parent issue number and child PR progress
+# (`closed`/`total`). The forward-looking closer (past windows) and the
+# upcoming-window composition both consume this. Per-slice round-trips
+# are acceptable because the number of in-progress slices is small
+# (~0-5 at any time).
 fetch_in_progress_slices() {
   local in_progress_all in_progress_slices_raw out='[]'
   in_progress_all=$(fetch_open_with_label "in-progress")
   in_progress_slices_raw=$(jq '
-    map(select((.labels | any(. == "type:prd") or any(. == "type:epic")) | not))
+    map(select(.labels | any(. == "size:slice")))
     | sort_by(.number)
   ' <<<"$in_progress_all")
   while read -r slice; do
@@ -117,15 +118,16 @@ fetch_in_progress_slices() {
 # `upcoming` is forward-looking: skip the past-window queries below and
 # survey the project's open obligations instead. The output document has
 # a different shape (no `range`, `commits`, `prsMerged`, `issuesClosed`,
-# `prdContext`); the SKILL.md prompt branches on `window` to consume it.
+# `featureContext`); the SKILL.md prompt branches on `window` to consume
+# it.
 if [ "$window" = "upcoming" ]; then
-  prds_raw=$(fetch_open_with_label "type:prd")
-  epics_raw=$(fetch_open_with_label "type:epic")
+  features_raw=$(fetch_open_with_label "size:feature")
+  initiatives_raw=$(fetch_open_with_label "size:initiative")
   open_parents=$(jq -s '
     add
-    | map(. + {kind: (if (.labels | any(. == "type:epic")) then "epic" else "prd" end)})
+    | map(. + {kind: (if (.labels | any(. == "size:initiative")) then "initiative" else "feature" end)})
     | sort_by(.number)
-  ' <(printf '%s' "$prds_raw") <(printf '%s' "$epics_raw"))
+  ' <(printf '%s' "$features_raw") <(printf '%s' "$initiatives_raw"))
 
   in_progress_slices=$(fetch_in_progress_slices)
 
@@ -197,29 +199,29 @@ issues_in_window=$(jq '
   map(.labels = (.labels | map(.name)))
   | map(. + {
       kind: (
-        if   (.labels | any(. == "type:prd"))     then "prd"
-        elif (.labels | any(. == "type:epic"))    then "epic"
-        elif (.labels | any(. == "size:multi-pr")) then "slice"
-        else                                            "leaf"
+        if   (.labels | any(. == "size:initiative")) then "initiative"
+        elif (.labels | any(. == "size:feature"))    then "feature"
+        elif (.labels | any(. == "size:slice"))      then "slice"
+        else                                              "task"
         end
       )
     })
 ' <<<"$issues_raw")
 
-# --- PRD context ---
-# Fetch User Stories for any PRD closed in window, plus the parent PRD
-# of any slice closed in window (so the agent has authoritative source
-# material for user-meaning translation). Parent lookup uses the native
-# sub-issue parent endpoint, not body-grep, so it stays accurate even if
-# the `## Parent` markdown convention drifts.
+# --- Feature context ---
+# Fetch User Stories for any feature closed in window, plus the parent
+# feature of any slice closed in window (so the agent has authoritative
+# source material for user-meaning translation). Parent lookup uses the
+# native sub-issue parent endpoint, not body-grep, so it stays accurate
+# even if the `## Parent` markdown convention drifts.
 
 extract_user_stories() {
   awk '/^## User Stories/{flag=1; next} flag && /^## /{exit} flag{print}'
 }
 
-prd_context='[]'
+feature_context='[]'
 seen=' '
-add_prd_context() {
+add_feature_context() {
   local num="$1"
   case "$seen" in *" $num "*) return ;; esac
   seen="$seen$num "
@@ -228,24 +230,25 @@ add_prd_context() {
   title=$(jq -r .title <<<"$data")
   body=$(jq -r .body <<<"$data")
   us=$(printf '%s\n' "$body" | extract_user_stories)
-  prd_context=$(jq --argjson n "$num" --arg t "$title" --arg us "$us" \
-    '. + [{number: $n, title: $t, userStories: $us}]' <<<"$prd_context")
+  feature_context=$(jq --argjson n "$num" --arg t "$title" --arg us "$us" \
+    '. + [{number: $n, title: $t, userStories: $us}]' <<<"$feature_context")
 }
 
-for num in $(jq -r '.[] | select(.kind == "prd") | .number' <<<"$issues_in_window"); do
-  add_prd_context "$num"
+for num in $(jq -r '.[] | select(.kind == "feature") | .number' <<<"$issues_in_window"); do
+  add_feature_context "$num"
 done
 
 for num in $(jq -r '.[] | select(.kind == "slice") | .number' <<<"$issues_in_window"); do
   parent=$(gh api "repos/{owner}/{repo}/issues/$num/parent" --jq .number 2>/dev/null) || continue
-  [ -n "$parent" ] && add_prd_context "$parent"
+  [ -n "$parent" ] && add_feature_context "$parent"
 done
 
 # --- In-progress slices (closer source) ---
 # The optional forward-looking closer in past-window prose ("next up:
 # ...") must be sourced from real open work, not extrapolated from a
-# closed PRD's user stories. Surface the same `inProgressSlices` shape
-# the upcoming branch uses, scoped to whatever is in motion right now.
+# closed feature's user stories. Surface the same `inProgressSlices`
+# shape the upcoming branch uses, scoped to whatever is in motion right
+# now.
 in_progress_slices=$(fetch_in_progress_slices)
 
 # `$rangeEnd` (not `$end`) because `end` is a jq builtin and shadows it.
@@ -257,7 +260,7 @@ in_progress_slices=$(fetch_in_progress_slices)
 printf '%s' "$commits_sample" >"$tmp_dir/commits.json"
 printf '%s' "$prs_in_window" >"$tmp_dir/prs.json"
 printf '%s' "$issues_in_window" >"$tmp_dir/issues.json"
-printf '%s' "$prd_context" >"$tmp_dir/prd.json"
+printf '%s' "$feature_context" >"$tmp_dir/feature.json"
 printf '%s' "$in_progress_slices" >"$tmp_dir/inflight.json"
 
 unfiltered=$(jq -n \
@@ -269,7 +272,7 @@ unfiltered=$(jq -n \
   --slurpfile commitsSample "$tmp_dir/commits.json" \
   --slurpfile prsMerged "$tmp_dir/prs.json" \
   --slurpfile issuesClosed "$tmp_dir/issues.json" \
-  --slurpfile prdContext "$tmp_dir/prd.json" \
+  --slurpfile featureContext "$tmp_dir/feature.json" \
   --slurpfile inProgressSlices "$tmp_dir/inflight.json" '
   {
     window: $window,
@@ -278,7 +281,7 @@ unfiltered=$(jq -n \
     commits: { count: $commitsCount, sample: $commitsSample[0] },
     prsMerged: $prsMerged[0],
     issuesClosed: $issuesClosed[0],
-    prdContext: $prdContext[0],
+    featureContext: $featureContext[0],
     inProgressSlices: $inProgressSlices[0]
   }
 ')
