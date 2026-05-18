@@ -239,7 +239,7 @@ Do not merge automatically. Do not address review feedback in the same invocatio
 
 - It does not address PR review feedback. If reviewers comment on an open PR, the user re-engages explicitly with "address feedback on PR <#>"; that's a separate flow.
 - It does not run E2E tests or any other long-running suite unless the brief or sub-section calls for it.
-- It does not modify `.env`, `config.toml`, port settings, or anything in `_docs/` referenced as "do not modify without permission."
+- It does not modify `.env`, infrastructure config (Docker, CI, port settings), or anything the project's own docs flag as "do not modify without permission."
 - It does not relabel a task. If the size was mis-called, surface it and ask the user; `/triage` owns label changes.
 - It does not handle larger specs. For `size:slice` and above: run `/decompose` to produce children.
 - It does not write a plan file. Task work doesn't need one; the inline chat plan in Step 5 is the working artifact.

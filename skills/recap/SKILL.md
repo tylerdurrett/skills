@@ -48,7 +48,7 @@ The translation rule has two flavors depending on what kind of change you're des
 
 **Avoid in the prose itself:**
 - Em-dashes (`—`). Use commas, periods, or parentheses instead.
-- Branch names (`prd/issue-166-recap-skill`). Refer to the *thing* ("the recap work") instead.
+- Branch names (`feature/issue-<N>-<slug>`). Refer to the *thing* ("the recap work") instead.
 - Commit SHAs of any length.
 - Conventional-commit prefixes (`feat(scope):`, `fix:`, `chore:`). Rewrite the title in plain English.
 - PR or issue numbers as primary objects ("PR #168 added X"). Numbers may appear as parenthetical references when truly necessary, but never as the subject of a sentence.
