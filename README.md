@@ -10,11 +10,23 @@ npx skills@latest add tylerdurrett/skills
 
 This uses the [`skills`](https://github.com/vercel-labs/skills) CLI by Vercel Labs. After running it, pick the skills you want and the agents you want them installed for (Claude Code, Cursor, Codex, etc.).
 
-## Status
+## First-time setup
 
-> **Heads up — the per-repo setup skill isn't shipped yet.** Several of the engineering skills below (`triage`, `execute`, `ship`, `audit`, `status`, etc.) assume a configured tracker, label vocabulary, and a `docs/agents/` directory in your repo. A `setup-tdog-skills` skill that scaffolds all of that on first run is in progress; until it lands, those skills will reach for files that don't exist. The non-tracker skills (`tdd`, `diagnose`, `grill-me`, `code-simplifier`, `skill-creator`, etc.) work standalone.
+Several of the engineering skills below (`triage`, `execute`, `ship`, `audit`, `decompose`, `status`, `recap`, `to-spec`, `defer`, `check`) assume a configured tracker, label vocabulary, integration-branch convention, and a `docs/agents/` directory in your repo. Run `setup-tdog-skills` once after install to scaffold all of that:
+
+```
+/setup-tdog-skills
+```
+
+It walks you through three decisions (issue tracker, triage label vocabulary, single- vs multi-context domain docs), writes the canonical docs under `docs/agents/`, drops in ADR-0008, and adds an `## Agent skills` block to your `CLAUDE.md` / `AGENTS.md`. The non-tracker skills (`tdd`, `diagnose`, `grill-me`, `code-simplifier`, `skill-creator`, etc.) work standalone and don't need it.
 
 ## The skills
+
+### Per-repo setup
+
+| Skill | What it does |
+| --- | --- |
+| [setup-tdog-skills](skills/setup-tdog-skills/) | Scaffold the `docs/agents/` directory, ADR-0008, and the `## Agent skills` memory block the workflow skills assume. Run once per repo. |
 
 ### Spec lifecycle (issue-tracker workflow)
 
