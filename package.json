@@ -1,13 +1,12 @@
 {
   "name": "tdog-skills",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs"
+  "description": "Tyler Durrett's library of agent skills for building software with AI coding agents. Install via the vercel-labs/skills CLI.",
+  "private": true,
+  "license": "MIT",
+  "author": "Tyler Durrett (https://github.com/tylerdurrett)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tylerdurrett/skills.git"
+  }
 }

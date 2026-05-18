@@ -153,7 +153,7 @@ Every workflow skill that produces a durable artifact ends with the same three-b
 - **You have an alignment session ready to capture**: run `/to-spec`.
 - **You have a freshly captured spec on the tracker**: run `/triage <N>` to verify size, seed bookkeeping, and route it.
 - **You're not sure where you are**: run `/status`.
-- **You're brand new to the project**: run `/get-started` (local-dev setup), then `/how-to-use` (this overview, but readable inline).
+- **You want this overview inline**: run `/how-to-use`.
 
 ## What sits above the loop
 

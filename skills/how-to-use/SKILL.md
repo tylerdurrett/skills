@@ -129,7 +129,6 @@ promotions up the tree.
 - **`/tdd`** is a red-green-refactor build loop for new code.
 - **`/improve-codebase-architecture`** finds places the code wants to
   be cleaner.
-- **`/get-started`** is first-time local-dev setup.
 
 ## Above the loop
 
@@ -145,7 +144,6 @@ Two doc-side artifacts feed the loop without being part of it:
 
 - **You have work in progress:** run **`/status`**.
 - **You have an idea brewing:** run **`/grill-with-docs`**.
-- **You just set the project up:** run **`/get-started`**.
 - **You're not sure:** run **`/status`**.
 ```
 
