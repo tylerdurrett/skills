@@ -1,6 +1,6 @@
 # tdog skills
 
-A library of [agent skills](https://github.com/vercel-labs/skills) for the way I (Tyler / [@tylerdurrett](https://github.com/tylerdurrett)) build software with AI coding agents. Straight from my dev environment.
+A library of [agent skills](https://github.com/vercel-labs/skills) for the way I build software with AI coding agents. Straight from my dev environment.
 
 ## Install
 
