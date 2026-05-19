@@ -27,7 +27,9 @@ Throughout the rest of this document, `<base-branch>` means "the integration bra
 ## Hard rules
 
 - **One PR per invocation.** Don't try to be clever and ship two tasks in one branch.
-- **The task must be labeled `ready-for-agent` AND `size:task`.** If either is missing, stop and tell the user to run `/triage` first. The size label is the maintainer's signed-off decision that this fits in one PR.
+- **The task must be labeled `ready-for-agent` AND `size:task`.** The size label is the maintainer's signed-off decision that this fits in one PR.
+  - If the issue is still labeled `needs-triage`, auto-invoke `/triage <N>` first (the canonical path from `needs-triage` → `ready-for-agent`), then **stop and wait for explicit user confirmation** before continuing. Do not proceed automatically even if triage landed the issue at `ready-for-agent`: triage may instead have routed it to `needs-info` / `needs-grilling`, or the user may want to inspect the agent brief or redirect.
+  - If `ready-for-agent` is missing for any other reason (no `needs-triage`, parked at `needs-info`, etc.), stop and tell the user to run `/triage` first.
 - **One commit per cohesive sub-section.** Each commit ends with `pnpm typecheck` / `pnpm lint:fix` / `pnpm format:fix` / `/simplify`. The "cohesive sub-section" is whatever the inline plan in Step 5 enumerates.
 - **No stacking.** Always branch off the latest `<base-branch>`.
 - **The agent brief on the task is the contract.** Don't drift from it.
@@ -41,7 +43,8 @@ gh issue view <N> --comments --json number,title,body,labels,state
 ```
 
 - `state` must be `OPEN`.
-- Labels must include `ready-for-agent` AND `size:task`. If either is missing, stop and tell the user to run `/triage` first.
+- **If the labels include `needs-triage`**, auto-invoke `/triage <N>` now. When triage returns, surface its three-block result to the user and **stop**. Wait for explicit user confirmation before continuing — even if triage cleanly landed the issue at `ready-for-agent`. Triage may have instead routed the issue to `needs-info` / `needs-grilling` (not executable), or the user may want to review the agent brief or redirect. Re-run the label check below only after the user confirms.
+- Labels must include `ready-for-agent` AND `size:task`. If either is missing (and `needs-triage` wasn't present to trigger the auto-invoke above), stop and tell the user to run `/triage` first.
 - Read the agent brief comment (typically the most recent `## Agent Brief` block, if any). Read any subsequent comments that update the contract. The contract is not just the brief: ancestor comments surfaced in Step 2 (slice synthesis from `/audit`, ad-hoc maintainer corrections, propagated audit findings) count as contract updates too.
 
 ## Step 2: Resolve the base branch by walking the parent chain
