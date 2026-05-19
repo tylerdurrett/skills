@@ -42,7 +42,7 @@ The input spec's `size:*` label picks the mode. Each tier's per-child writes, ne
 Three roles, two processes:
 
 - **Agent A** — this Claude session. Runs `/check #<N>` in-conversation against the resolved spec. The conversation surfaces findings one at a time (the `/check` style); the run terminates with the standard `## Findings` block.
-- **Agent B** — `codex exec` subprocess running `/check #<N>` against the same spec in parallel. Output captured deterministically via `-o <tmpfile>`. Runs in `--sandbox read-only` because `/check` is read-only by design and locking the subprocess down matches that contract.
+- **Agent B** — `codex exec` subprocess running `/check #<N>` against the same spec in parallel. Output captured deterministically via `-o <tmpfile>`. Runs in `--sandbox workspace-write` with `sandbox_workspace_write.network_access=true` because `/check` needs the network (`gh issue view`, `gh issue list`) and reads from the workspace; the skill's own contract is what prevents writes, not the sandbox. `read-only` is the wrong fit — it blocks network and `gh` cannot reach `api.github.com`, so the leg falls through with "missing-issue".
 - **Synthesiser** — this same Claude session, after both legs finish. Reads Agent B's captured output, parses both legs' `## Findings` blocks, merges and dedupes by substance, drops items one leg convincingly refutes, runs the forward-scope check (skipping it cleanly when the tier has no later open siblings to defer to), classifies each surviving finding into a per-tier action, applies the backward-propagation bar (slice and task tiers only), and produces the unified write set with provenance per finding (`claude` / `codex` / `both`).
 
 Sub-tasks within the synthesiser (forward-scope checks, codebase grounding when a finding needs a re-read, clustering uncovered scope into draft new children) use `Task(subagent_type="Explore")`. No extra `claude -p` nesting needed — only Agent B is an outside subprocess.
@@ -114,7 +114,8 @@ gh issue list --search "parent-issue:<owner>/<repo>#<P>" \
 RUN_ID=$(date +%Y%m%d-%H%M%S)-$$
 CODEX_OUT=$(mktemp -t "audit-codex-${RUN_ID}.XXXXXX")
 codex exec \
-  --sandbox read-only \
+  --sandbox workspace-write \
+  -c 'sandbox_workspace_write.network_access=true' \
   --ephemeral \
   --skip-git-repo-check \
   -C "$(pwd)" \
@@ -124,7 +125,7 @@ codex exec \
 
 Notes on the invocation:
 
-- `--sandbox read-only` matches `/check`'s read-only contract.
+- `--sandbox workspace-write -c 'sandbox_workspace_write.network_access=true'` because `/check` needs network access (`gh issue view`, `gh issue list`) — the previous `--sandbox read-only` blocked network and the Codex leg silently fell through with `error connecting to api.github.com`. `workspace-write` allows network and writes inside the workspace; the skill's read-only contract is what stops writes, not the sandbox.
 - `--ephemeral` because this is a one-shot — no need to persist a Codex session.
 - `-o <file>` writes Agent B's final message (which carries the `## Findings` block) to a file the synthesiser can read deterministically. This is the analog of `claude -p --output-format json`'s `result` field — same idea, different CLI.
 - `-C "$(pwd)"` ensures Codex runs at the repo root so its `.agents/skills/` lookup resolves `/check`. Skip only if the parent is already at the root.
@@ -430,7 +431,7 @@ If the skill aborts mid-run, the file remains in `${TMPDIR:-/tmp}/` for forensic
 - **Backward-propagation bar is narrow.** Slice and task modes only. Schema changes, breaking API / type changes, sequencing reversals — and that's it. Anything broader spams sibling specs and parent specs with noise.
 - **Re-runs are idempotent on new-child creation.** The `**Surfaced by:** /audit run on <tier> #<N>` marker is the canonical dedupe key against existing native sub-issues of `<N>`. Re-running on the same spec produces only new children that don't already exist; existing audit-origin children are skipped.
 - **Re-runs append to today's synthesis comment.** Same-day re-runs append new bullets to today's existing dated comment rather than creating a second same-dated comment.
-- **Codex sandbox stays `read-only`.** `/check` doesn't write; locking the subprocess down matches that contract and prevents Codex from accidentally editing files in this repo.
+- **Codex sandbox is `workspace-write` with `sandbox_workspace_write.network_access=true`.** `/check` needs network for `gh issue view` / `gh issue list`. `read-only` blocks network in Codex and the leg falls through with `error connecting to api.github.com`; that's what the skill exists to catch via its single failure mode, not the desired steady state. The skill's read-only contract is what prevents writes, not the sandbox.
 - **`/check` remains independently invocable.** This skill orchestrates `/check`; it does not replace it. The single-agent path is faster and remains the default for cheap dry-runs.
 
 ## What this skill does NOT do
