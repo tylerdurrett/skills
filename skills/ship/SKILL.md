@@ -56,7 +56,7 @@ The closing bracket of `/execute` for any task, regardless of parent kind. The f
 - **PR exists**: squash + delete-branch + fast-forward base + close task. Steps T1 through T8.
 - **No PR exists**: defensive close on the tracker, no git operations. Step T1d.
 
-GitHub's `Closes #<N>` keyword only auto-closes when a PR merges into the repo's default branch. Per [ADR-0008](../../../docs/adr/0008-issues-branch-from-parent-integration-branch.md), almost every task PR targets a non-`main` integration branch, so this skill makes that gap invisible.
+GitHub's `Closes #<N>` keyword only auto-closes when a PR merges into the repo's default branch. Per [ADR-0001](../../../docs/adr/0001-issues-branch-from-parent-integration-branch.md) (or whatever slot the integration-branch ADR landed in), almost every task PR targets a non-`main` integration branch, so this skill makes that gap invisible.
 
 ### T1. Identify the PR (or route to defensive close)
 
@@ -134,7 +134,7 @@ gh issue view <N> --json state -q .state
   declaring_parent=$(printf '%s\n' "<base-branch>" | grep -oE 'issue-[0-9]+' | grep -oE '[0-9]+')
   ```
 
-  `<P>` here is the immediate ancestor whose body declared `<base-branch>`. Under the recursive rule (ADR-0008) the chain may be deeper (slice -> feature -> main), but the comment names only the immediate parent because that is the next promotion step the task is waiting on.
+  `<P>` here is the immediate ancestor whose body declared `<base-branch>`. Under the recursive rule (the integration-branch ADR) the chain may be deeper (slice -> feature -> main), but the comment names only the immediate parent because that is the next promotion step the task is waiting on.
 
 - If `CLOSED`: leave it. GitHub's `Closes #<N>` keyword auto-fired (the PR merged to `main`).
 
@@ -223,7 +223,7 @@ Derive the parent from the task body's `**Part of:** #<P>` line if present.
 
 ## Promotion flow (slice and feature)
 
-Land a slice's or feature's integration branch on its parent's branch (or `main` for orphans / for features), then close the parent spec and clean up locally. This is the recursive shape from [ADR-0008](../../../docs/adr/0008-issues-branch-from-parent-integration-branch.md): an issue's working branch is its parent's integration branch, and `main` is the terminal fallback.
+Land a slice's or feature's integration branch on its parent's branch (or `main` for orphans / for features), then close the parent spec and clean up locally. This is the recursive shape from [ADR-0001](../../../docs/adr/0001-issues-branch-from-parent-integration-branch.md) (or the slot it landed in if `0001` was already taken): an issue's working branch is its parent's integration branch, and `main` is the terminal fallback.
 
 The flow is stateful but presents as a single invocation: it detects whether a promotion PR already exists and whether it has been merged, and resumes from the right step. Re-running is always safe; at worst it is a no-op.
 

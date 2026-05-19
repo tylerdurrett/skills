@@ -141,7 +141,7 @@ main
 
 Each task's PR targets the slice's integration branch (or the feature's, or `main`, depending on parentage). When all tasks under a slice close, `/ship <slice>` promotes the slice's branch onto the feature's branch. When all slices under a feature close, `/ship <feature>` promotes the feature's branch onto `main`. Initiatives have no integration branch.
 
-The recursion is captured in [ADR-0008](../adr/0008-issues-branch-from-parent-integration-branch.md): an issue's working branch is its parent's integration branch, walking upward, with `main` as the terminal fallback.
+The recursion is captured in [ADR-0001](../adr/0001-issues-branch-from-parent-integration-branch.md): an issue's working branch is its parent's integration branch, walking upward, with `main` as the terminal fallback.
 
 ## End-of-run output
 

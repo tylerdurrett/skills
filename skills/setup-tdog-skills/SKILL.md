@@ -1,6 +1,6 @@
 ---
 name: setup-tdog-skills
-description: Scaffold the per-repo configuration the tdog engineering skills assume — an `## Agent skills` block in CLAUDE.md/AGENTS.md, the canonical docs under `docs/agents/`, and ADR-0008 under `docs/adr/`. Run before first use of `/triage`, `/to-spec`, `/decompose`, `/check`, `/audit`, `/execute`, `/ship`, `/status`, `/recap`, `/defer`, or `/grill-with-docs` — or any time those skills appear to be missing context about the issue tracker, the label vocabulary, the integration-branch convention, or the domain doc layout.
+description: Scaffold the per-repo configuration the tdog engineering skills assume — an `## Agent skills` block in CLAUDE.md/AGENTS.md, the canonical docs under `docs/agents/`, and the integration-branch ADR under `docs/adr/`. Run before first use of `/triage`, `/to-spec`, `/decompose`, `/check`, `/audit`, `/execute`, `/ship`, `/status`, `/recap`, `/defer`, or `/grill-with-docs` — or any time those skills appear to be missing context about the issue tracker, the label vocabulary, the integration-branch convention, or the domain doc layout.
 disable-model-invocation: true
 ---
 
@@ -12,7 +12,7 @@ Scaffold the per-repo configuration the tdog engineering skill set assumes:
 - **Triage labels** — the strings used for the canonical state vocabulary, including the `cleanup` category used by `/defer`.
 - **Domain docs** — where `CONTEXT.md` and ADRs live, and the consumer rules for reading them.
 
-Plus four fixed-shape documents that every workflow skill grep's against (not user-configurable), and ADR-0008 (referenced by `/execute` and `/ship` by exact path).
+Plus four fixed-shape documents that every workflow skill grep's against (not user-configurable), and the integration-branch ADR (referenced by `/execute` and `/ship`; numbered 0001 by default, bumped to the next free slot if the repo already has ADRs occupying it).
 
 This is a prompt-driven skill, not a deterministic script. Explore, present what you found, confirm with the user, then write. Assume the user does not know what these terms mean — each section is preceded by a short explainer.
 
@@ -37,7 +37,7 @@ Things to gather:
 - **Memory files at the repo root.** Does `CLAUDE.md` exist? Does `AGENTS.md` exist? Both? Neither? If both exist, treat `CLAUDE.md` as canonical and prefer editing it; mention `AGENTS.md` to the user as a duplicate worth resolving.
 - **Existing `## Agent skills` block** in either file. If present, the skill updates it in place; don't append a duplicate.
 - **`CONTEXT.md`, `CONTEXT-MAP.md`** at the repo root. Their presence steers Section B's default.
-- **`docs/adr/`** — what numbered ADRs are already there? Specifically: does `0008-*.md` already exist? That collision matters for the ADR-0008 drop-in.
+- **`docs/adr/`** — what numbered ADRs are already there? The integration-branch ADR drops in as `0001-*.md` by default; if the directory already has ADRs, scan for the highest existing number and pick the next free slot.
 - **`docs/agents/`** — does prior output already exist? If any of `README.md`, `triage-labels.md`, `issue-tracker.md`, `output-format.md`, `lifecycle-initiative.md`, or `domain.md` is already there, treat this as a re-run and skip the rewrite for the ones that are intact.
 
 ### 2. Present findings and ask
@@ -115,9 +115,7 @@ These come along for free, regardless of the answers above:
 - **`docs/agents/README.md`** — the system overview every workflow skill references. Fixed convention.
 - **`docs/agents/output-format.md`** — the end-of-run output template every workflow skill grep's against. Fixed convention.
 - **`docs/agents/lifecycle-initiative.md`** — initiative-tier rules (`<!-- progress-comment:initiative -->` marker, manual closure, two-phase intent → materialization). Fixed convention.
-- **`docs/adr/0008-issues-branch-from-parent-integration-branch.md`** — referenced by `/execute` and `/ship` by exact path. Drops in verbatim from the template.
-
-The only question to raise: **if `docs/adr/0008-*.md` already exists** with a different topic, ask the user whether to renumber the incoming ADR to the next free slot. If they accept, pick the next free number, rewrite the file's header `# ADR-XXXX — …`, and update the references in the freshly-written `docs/agents/README.md` (the link in the "Integration branches" section) and in [issue-tracker.md](./templates/agents/issue-tracker.md) before writing. **Do not** patch references inside the consumer skills under `skills/` — those live in the published library, not the user's repo.
+- **`docs/adr/NNNN-issues-branch-from-parent-integration-branch.md`** — referenced by `/execute` and `/ship`. Drops in from the template at `templates/adr/0001-*.md`. Default slot is `0001`; if `docs/adr/` already has ADRs, scan for the highest existing number and use the next free slot instead. Either way, rewrite the file's header `# ADR-NNNN — …` to match the chosen number, and update the references in the freshly-written `docs/agents/README.md` (the link in the "Integration branches" section) and in [issue-tracker-local-markdown.md](./templates/agents/issue-tracker-local-markdown.md) before writing. **Do not** patch references inside the consumer skills under `skills/` — those live in the published library, not the user's repo.
 
 ### 3. Confirm and edit drafts
 
@@ -125,7 +123,7 @@ Show the user a draft of:
 
 - The `## Agent skills` block to add to whichever of `CLAUDE.md` / `AGENTS.md` is being edited.
 - The contents of `docs/agents/issue-tracker.md`, `docs/agents/triage-labels.md`, `docs/agents/domain.md`.
-- A note that `docs/agents/README.md`, `docs/agents/output-format.md`, `docs/agents/lifecycle-initiative.md`, and `docs/adr/0008-*.md` will be written verbatim from the templates with `<owner>/<repo>` substituted.
+- A note that `docs/agents/README.md`, `docs/agents/output-format.md`, `docs/agents/lifecycle-initiative.md`, and `docs/adr/NNNN-issues-branch-from-parent-integration-branch.md` (where `NNNN` is `0001` or the next free slot) will be written verbatim from the templates with `<owner>/<repo>` substituted.
 
 Let them edit before writing. If they push back on something fixed (e.g. "do we really need lifecycle-initiative.md?"), the answer is yes — the workflow skills link to it by path and the link will 404 without it. Surface the reason and move on.
 
@@ -166,7 +164,7 @@ Specs (initiatives, features, slices, tasks) live as GitHub issues on `<owner>/<
 
 ### Integration branches
 
-Per [ADR-0008](docs/adr/0008-issues-branch-from-parent-integration-branch.md), a spec's working branch is its parent's integration branch, recursing upward with `main` as the terminal fallback. `/triage` declares the integration branch name on `size:feature` and `size:slice` specs (`feature/issue-<N>-<slug>` and `slice/issue-<N>-<slug>` respectively); `/execute` creates the branch lazily on first use; `/ship` promotes it upward at the slice and feature tiers. Initiatives have no integration branch.
+Per [ADR-NNNN](docs/adr/NNNN-issues-branch-from-parent-integration-branch.md) (substitute the actual number chosen at write time), a spec's working branch is its parent's integration branch, recursing upward with `main` as the terminal fallback. `/triage` declares the integration branch name on `size:feature` and `size:slice` specs (`feature/issue-<N>-<slug>` and `slice/issue-<N>-<slug>` respectively); `/execute` creates the branch lazily on first use; `/ship` promotes it upward at the slice and feature tiers. Initiatives have no integration branch.
 
 ### Domain docs
 
@@ -195,7 +193,7 @@ For each path, copy the template verbatim, then run a literal substitution `<own
 | `docs/agents/output-format.md`                    | `templates/agents/output-format.md`                             | verbatim |
 | `docs/agents/lifecycle-initiative.md`             | `templates/agents/lifecycle-initiative.md`                      | verbatim |
 | `docs/agents/domain.md`                           | `templates/agents/domain.md`                                    | enumerate per-package layout if Section B picked multi-context |
-| `docs/adr/0008-issues-branch-from-parent-integration-branch.md` | `templates/adr/0008-issues-branch-from-parent-integration-branch.md` | renumber if 0008 already taken (see "What the user does NOT pick" above) |
+| `docs/adr/NNNN-issues-branch-from-parent-integration-branch.md` | `templates/adr/0001-issues-branch-from-parent-integration-branch.md` | `NNNN` is `0001` by default; bump to the next free slot if `docs/adr/` already has ADRs occupying it (see "What the user does NOT pick" above). Rewrite the `# ADR-NNNN — …` header to match. |
 
 If `docs/agents/` or `docs/adr/` don't exist yet, create them. Idempotency rule: if a destination file already exists with non-trivial differences from the template, **do not silently overwrite** — show the user a diff and let them decide. Re-runs against a clean install should be no-ops.
 
@@ -223,7 +221,7 @@ End-of-run output per [docs/agents/output-format.md](./templates/agents/output-f
 Scaffolded tdog skills under <owner>/<repo>.
 
 - docs/agents/{README,issue-tracker,triage-labels,output-format,lifecycle-initiative,domain}.md
-- docs/adr/0008-issues-branch-from-parent-integration-branch.md
+- docs/adr/NNNN-issues-branch-from-parent-integration-branch.md  (NNNN = the slot chosen at write time)
 - ## Agent skills block in <CLAUDE.md|AGENTS.md>
 
 > Next step: `/triage`. Survey the tracker (will be quiet on a fresh repo) and confirm the labels resolve.
@@ -234,7 +232,7 @@ Scaffolded tdog skills under <owner>/<repo>.
 After a fresh run in a previously-unconfigured repo, all of the following should be true:
 
 1. `ls docs/agents/` shows `README.md`, `issue-tracker.md`, `triage-labels.md`, `output-format.md`, `lifecycle-initiative.md`, `domain.md`.
-2. `ls docs/adr/` includes `0008-issues-branch-from-parent-integration-branch.md` (or the renumbered slot, with the references in `docs/agents/README.md` and `docs/agents/issue-tracker.md` updated to match).
+2. `ls docs/adr/` includes `NNNN-issues-branch-from-parent-integration-branch.md` (where `NNNN` is `0001` or the next free slot if `0001` was already taken), with the references in `docs/agents/README.md` and `docs/agents/issue-tracker.md` matching the chosen number.
 3. `CLAUDE.md` (or `AGENTS.md`) has an `## Agent skills` block linking to each doc plus a paragraph on the integration-branch convention.
 4. `grep -rn "<owner>/<repo>" docs/` returns nothing.
 5. `gh label list` includes all seven state labels, `in-progress`, the four `size:*` labels, and the three category labels (including `cleanup`).
@@ -243,7 +241,7 @@ After a fresh run in a previously-unconfigured repo, all of the following should
 ## What this skill does NOT do
 
 - It does not edit the workflow skills under `skills/`. Those are the published library; the user's repo's `docs/agents/` is the configuration surface.
-- It does not seed `CONTEXT.md` or any ADR other than 0008. `/grill-with-docs` is the producer for both.
+- It does not seed `CONTEXT.md` or any ADR other than the integration-branch one. `/grill-with-docs` is the producer for both.
 - It does not create initial specs or initiatives. `/to-spec` is the producer.
 - It does not bootstrap `docs/north-star.md` or `docs/roadmap.md`. Those are `/north-star` and `/roadmap-review` territory.
 - It does not support tracker backends other than GitHub. Local markdown, Linear, Jira, and GitLab would need adapter work in the consumer skills (`/triage`, `/decompose`, `/execute`, `/ship`, `/defer`, `/status`, `/to-spec`, `/audit`, `/check`, `/recap`) before they could be offered here. The local-markdown template file at `templates/agents/issue-tracker-local-markdown.md` is kept as forward-compatible scaffolding for that future work.

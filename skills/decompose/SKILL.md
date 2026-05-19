@@ -15,7 +15,7 @@ Tier-aware decomposition. Reads the input spec's `size:*` label and produces chi
 
 Children land with `size:<child-tier>` + `needs-triage` only. `/triage` handles per-child routing (state label, `needs-grilling` at the initiative→feature boundary, integration-branch declaration for `size:feature` / `size:slice`, sticky progress comment for `size:initiative`).
 
-This skill is the *writer*; `/execute` is the *runner*. Integration branches are not created on origin here. `/execute` seeds them lazily on first use, walking the parent chain per [ADR-0008](../../../docs/adr/0008-issues-branch-from-parent-integration-branch.md).
+This skill is the *writer*; `/execute` is the *runner*. Integration branches are not created on origin here. `/execute` seeds them lazily on first use, walking the parent chain per [ADR-0001](../../../docs/adr/0001-issues-branch-from-parent-integration-branch.md) (or the slot it landed in if `0001` was already taken).
 
 For tracker mechanics see [docs/agents/issue-tracker.md](../../../docs/agents/issue-tracker.md); for label vocabulary see [docs/agents/triage-labels.md](../../../docs/agents/triage-labels.md); for the canonical end-of-run output see [docs/agents/output-format.md](../../../docs/agents/output-format.md).
 

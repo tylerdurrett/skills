@@ -73,4 +73,4 @@ There is no separate "sub-issue attach" call — setting the frontmatter is the 
 
 ## When there is no parent
 
-A top-level spec (roadmap-bullet-to-initiative, or an orphan ad-hoc slice/task) sets `part-of:` to empty. This is the documented no-parent path; downstream walks (`/execute`'s parent-chain walk per [ADR-0008](../adr/0008-issues-branch-from-parent-integration-branch.md)) terminate at `main` as the fallback base branch.
+A top-level spec (roadmap-bullet-to-initiative, or an orphan ad-hoc slice/task) sets `part-of:` to empty. This is the documented no-parent path; downstream walks (`/execute`'s parent-chain walk per [ADR-0001](../adr/0001-issues-branch-from-parent-integration-branch.md)) terminate at `main` as the fallback base branch.

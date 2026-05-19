@@ -1,4 +1,4 @@
-# ADR-0008 — Issues branch off their parent's integration branch
+# ADR-0001 — Issues branch off their parent's integration branch
 
 - **Date:** 2026-05-06
 - **Status:** Accepted

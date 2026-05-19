@@ -18,7 +18,7 @@ Several of the engineering skills below (`triage`, `execute`, `ship`, `audit`, `
 /setup-tdog-skills
 ```
 
-It walks you through two decisions (triage label vocabulary, single- vs multi-context domain docs), writes the canonical docs under `docs/agents/`, drops in ADR-0008, and adds an `## Agent skills` block to your `CLAUDE.md` / `AGENTS.md`. GitHub is the only tracker backend supported today; the workflow skills shell out to `gh issue *`. The non-tracker skills (`tdd`, `diagnose`, `grill-me`, `code-simplifier`, `skill-creator`, etc.) work standalone and don't need any setup.
+It walks you through two decisions (triage label vocabulary, single- vs multi-context domain docs), writes the canonical docs under `docs/agents/`, drops in the integration-branch ADR (`docs/adr/0001-*.md` by default, bumped to the next free slot if `0001` is already taken), and adds an `## Agent skills` block to your `CLAUDE.md` / `AGENTS.md`. GitHub is the only tracker backend supported today; the workflow skills shell out to `gh issue *`. The non-tracker skills (`tdd`, `diagnose`, `grill-me`, `code-simplifier`, `skill-creator`, etc.) work standalone and don't need any setup.
 
 ## The skills
 
@@ -26,7 +26,7 @@ It walks you through two decisions (triage label vocabulary, single- vs multi-co
 
 | Skill | What it does |
 | --- | --- |
-| [setup-tdog-skills](skills/setup-tdog-skills/) | Scaffold the `docs/agents/` directory, ADR-0008, and the `## Agent skills` memory block the workflow skills assume. Run once per repo. |
+| [setup-tdog-skills](skills/setup-tdog-skills/) | Scaffold the `docs/agents/` directory, the integration-branch ADR, and the `## Agent skills` memory block the workflow skills assume. Run once per repo. |
 
 ### Spec lifecycle (issue-tracker workflow)
 

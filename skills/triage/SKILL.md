@@ -34,7 +34,7 @@ If the spec has no size label (hand-created without `/to-spec`), recommend one a
 
 Conditional on the (final) size:
 
-- **`size:feature` or `size:slice`**: declare the integration branch. Compute the branch name (`feature/issue-<N>-<slug>` for features, `slice/issue-<N>-<slug>` for slices) and prepend `**Integration Branch:** <branch>` to the spec body, just below the `**Part of:** #<P>` line if present. Body edit via `gh issue edit <N> --body-file -`. The branch itself is created lazily by `/execute` on first use per [ADR-0008](../../../docs/adr/0008-issues-branch-from-parent-integration-branch.md); `/triage` only declares the name.
+- **`size:feature` or `size:slice`**: declare the integration branch. Compute the branch name (`feature/issue-<N>-<slug>` for features, `slice/issue-<N>-<slug>` for slices) and prepend `**Integration Branch:** <branch>` to the spec body, just below the `**Part of:** #<P>` line if present. Body edit via `gh issue edit <N> --body-file -`. The branch itself is created lazily by `/execute` on first use per [ADR-0001](../../../docs/adr/0001-issues-branch-from-parent-integration-branch.md) (or the slot it landed in if `0001` was already taken); `/triage` only declares the name.
 
 - **`size:initiative`**: seed the sticky progress comment. Post a comment in the exact shape documented at [lifecycle-initiative.md §The marker](../../../docs/agents/lifecycle-initiative.md#the---progress-commentinitiative---marker) (`<!-- progress-comment:initiative -->` marker on the first line, `## Child features` heading, italic placeholder). `/to-spec` (initiative as parent) and `/decompose` replace the placeholder with `- [ ] #<F> — <title>` rows as features attach.
 

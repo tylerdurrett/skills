@@ -9,9 +9,9 @@ Ship a task: read the brief, branch off the right base, implement, commit per co
 
 This skill handles every `size:task` spec regardless of parent. Tasks can sit directly under a slice, under a feature with no intervening slice, or be orphans. `/decompose` is the upstream counterpart that produces tasks from a larger spec; the two skills cover disjoint sizes and refuse to run on the wrong size label.
 
-## Base branch: parent's integration branch (per ADR-0008)
+## Base branch: parent's integration branch (per the integration-branch ADR)
 
-Per [ADR-0008](../../../docs/adr/0008-issues-branch-from-parent-integration-branch.md), a spec's working branch is its parent's integration branch, recursing upward through the parent chain, with `main` only as the fallback for orphans (or chains that terminate without a declared integration branch).
+Per [ADR-0001](../../../docs/adr/0001-issues-branch-from-parent-integration-branch.md) (or whatever slot `setup-tdog-skills` placed it in if `0001` was already taken), a spec's working branch is its parent's integration branch, recursing upward through the parent chain, with `main` only as the fallback for orphans (or chains that terminate without a declared integration branch).
 
 The walk:
 
