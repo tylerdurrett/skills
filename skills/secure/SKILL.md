@@ -42,7 +42,8 @@ Before any detection commands, summarize in plain English (adapt to what they as
 
 - The three protections, what they do, what they trade off
 - That you will detect their setup (versions, install methods, config sources) before suggesting changes
-- That you will fetch current docs to confirm key names and version requirements
+- That **if the system is already hardened** (correct versions + correct config + no overrides) you will report that and exit — no doc fetches, no changes, no further prompts. Re-running this skill is cheap.
+- That you will fetch current docs to confirm key names and version requirements **only if changes are needed**
 - That you may need to **upgrade** npm or pnpm if their version doesn't support the requested settings
 - That you will **only** modify configuration files (no `npm install`, no `pnpm install`, no mutating commands)
 - The bypass cheatsheet (see end of this skill) for when a legitimate fresh package gets blocked
@@ -118,6 +119,19 @@ A pin at `~/package.json` is a common footgun — it silently pins every subdire
 
 Specifically scan for: `minimum-release-age=0`, `min-release-age=0`, `block-exotic-subdeps=false`, `ignore-scripts=false`, or any `--config.*` overrides in script definitions. Report each one — they will silently undo what you're about to set at the global level.
 
+**Decide if there's anything to do (idempotency check)**:
+
+Compare detection results against the target state. If **all** of the following hold, the system is already hardened — report observed values to the user, quote the bypass cheatsheet from step 8, and **stop**. Do not fetch docs, do not propose changes, do not re-prompt.
+
+- `pnpm --version` ≥ 10.26 (covers both `minimum-release-age` and `block-exotic-subdeps`)
+- `npm --version` ≥ 11.14 (the version where `min-release-age` is recognized — verify against current docs only if this priors-based threshold is what's blocking exit)
+- `pnpm config list` shows `minimum-release-age=10080` (or higher), `block-exotic-subdeps=true`, `ignore-scripts=true`
+- `npm config get min-release-age` returns `10080` (or higher) **and** `npm config ls --long` emits no "Unknown user config" warning for it
+- No project-level overrides found above that weaken any of these keys
+- No stray `packageManager` pin that overrides the active pnpm
+
+If **any** condition fails, continue to step 3 — but carry the passing conditions forward: in step 4, only propose changes for the parts that aren't already correct (don't rewrite `~/.config/pnpm/rc` if its keys already match; don't upgrade pnpm if it's already new enough).
+
 ### 3. Fetch current docs
 
 Run WebFetch on the three URLs at the top of this skill. For each fetched page, extract:
@@ -132,12 +146,14 @@ If a current doc says one thing but the user's installed tool behaves differentl
 
 ### 4. Propose the concrete changes; get specific approval
 
-Now you have enough to propose a precise plan. Show the user, in a small table:
+Now you have enough to propose a precise plan. Only include items where the detected state does **not** already match the target — keys that are already correct should be called out as "already set, skipping" rather than re-written. Show the user, in a small table:
 
-- Which config files you will create or modify, with the exact lines being added or removed
-- Whether any tool upgrades are needed (npm version too old for `min-release-age`? pnpm too old for either key?)
+- Which config files you will create or modify, with the exact lines being added or removed (omit files whose contents already match)
+- Whether any tool upgrades are needed (npm version too old for `min-release-age`? pnpm too old for either key?) — skip upgrades for tools that are already new enough
 - The order of operations (upgrade → write configs → verify)
 - Any project-level overrides you found, with a separate offer to patch each one
+
+If after filtering you have an empty plan (everything was already correct except for one trivial thing, etc.), state that explicitly rather than padding the plan with no-op rows.
 
 Wait for explicit go-ahead before any write. If the user wants to skip the upgrades, honor that — apply only the settings their current versions actually enforce, and tell them which keys will sit as no-ops.
 
