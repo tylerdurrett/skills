@@ -9,7 +9,7 @@ Goal: turn on a small, well-understood set of supply-chain mitigations for npm a
 
 This skill installs persistent protections, not a one-shot scan. The protections are:
 
-1. **`minimum-release-age=10080`** (7 days, in minutes) — refuse to install package versions newer than 7 days. Catches almost all malicious packages, which get pulled within days of being caught.
+1. **7-day install delay** — refuse to install package versions newer than 7 days. Catches almost all malicious packages, which get pulled within days of being caught. **Units differ between tools**: pnpm's `minimum-release-age` is in **minutes** (so 7 days = `10080`); npm's `min-release-age` is in **days** (so 7 days = `7`). Do not copy one value into the other tool's config.
 2. **`block-exotic-subdeps=true`** (pnpm-only) — refuse dependencies pulled from git URLs, tarballs, or file paths instead of the registry. Legitimate projects almost never need these.
 3. **`ignore-scripts=true`** — disable install-time `preinstall`/`install`/`postinstall` scripts. Strong; will break a small number of packages that genuinely need build scripts.
 
@@ -126,7 +126,7 @@ Compare detection results against the target state. If **all** of the following 
 - `pnpm --version` ≥ 10.26 (covers both `minimum-release-age` and `block-exotic-subdeps`)
 - `npm --version` ≥ 11.14 (the version where `min-release-age` is recognized — verify against current docs only if this priors-based threshold is what's blocking exit)
 - `pnpm config list` shows `minimum-release-age=10080` (or higher), `block-exotic-subdeps=true`, `ignore-scripts=true`
-- `npm config get min-release-age` returns `10080` (or higher) **and** `npm config ls --long` emits no "Unknown user config" warning for it
+- `npm config get min-release-age` returns `7` (or higher — npm's unit is **days**, not minutes) **and** `npm config ls --long` emits no "Unknown user config" warning for it
 - No project-level overrides found above that weaken any of these keys
 - No stray `packageManager` pin that overrides the active pnpm
 
@@ -194,7 +194,7 @@ Use exactly the file locations and key names confirmed in step 3, **not** the pr
 | File                | Purpose                                                                 | Keys to set                                              |
 | ------------------- | ----------------------------------------------------------------------- | -------------------------------------------------------- |
 | `~/.config/pnpm/rc` | pnpm's canonical global INI (from `globalconfig` in step 2)             | `minimum-release-age=10080`, `block-exotic-subdeps=true` |
-| `~/.npmrc`          | npm user-level INI (read by npm; also read by pnpm for backward-compat) | `min-release-age=10080`, `ignore-scripts=true`           |
+| `~/.npmrc`          | npm user-level INI (read by npm; also read by pnpm for backward-compat) | `min-release-age=7` (npm's unit is **days**, not minutes), `ignore-scripts=true` |
 
 Notes:
 
@@ -220,8 +220,8 @@ npm config get min-release-age 2>&1
 
 Expected after a clean run on a modern stack:
 
-- `pnpm config list` shows `block-exotic-subdeps=true`, `ignore-scripts=true`, `minimum-release-age=10080`, and the npm-side `min-release-age=10080` (since `~/.npmrc` is also read by pnpm)
-- `npm config ls --long` shows `ignore-scripts = true` and `min-release-age = "10080"`, each marked `; overridden by user` (with no "Unknown user config" warnings)
+- `pnpm config list` shows `block-exotic-subdeps=true`, `ignore-scripts=true`, `minimum-release-age=10080` (minutes), and the npm-side `min-release-age=7` (days — since `~/.npmrc` is also read by pnpm)
+- `npm config ls --long` shows `ignore-scripts = true` and `min-release-age = "7"`, each marked `; overridden by user` (with no "Unknown user config" warnings)
 - Calling `pnpm config get` or `npm config get` for any of these keys returns the value with no warning
 
 If any "Unknown user config" warning persists, the corresponding tool is too old for that key. Either upgrade (step 5) or remove the key from the file that tool reads.
