@@ -10,6 +10,12 @@ npx skills@latest add tylerdurrett/skills
 
 This uses the [`skills`](https://github.com/vercel-labs/skills) CLI by Vercel Labs. After running it, pick the skills you want and the agents you want them installed for (Claude Code, Cursor, Codex, etc.).
 
+If the target repo doesn't already have a `.claude/` directory, the CLI silently skips the Claude Code symlinks (it only writes the canonical `.agents/skills/` copies). Create the directory first so the symlinks get made:
+
+```bash
+mkdir -p .claude && npx skills@latest add tylerdurrett/skills
+```
+
 ## First-time setup
 
 Several of the engineering skills below (`triage`, `execute`, `ship`, `audit`, `decompose`, `status`, `recap`, `to-spec`, `defer`, `check`) assume a configured tracker, label vocabulary, integration-branch convention, and a `docs/agents/` directory in your repo. Run `setup-tdog-skills` once after install to scaffold all of that:
