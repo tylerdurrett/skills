@@ -55,8 +55,6 @@ A four-tier flow — initiative → feature → slice → task — that publishe
 
 | Skill | What it does |
 | --- | --- |
-| [north-star](skills/north-star/) | Maintain `docs/north-star.md` — the project's vision doc. |
-| [roadmap-review](skills/roadmap-review/) | Maintain `docs/roadmap.md` — capacity-honest sequencing between the north star and initiatives. |
 | [grill-with-docs](skills/grill-with-docs/) | Stress-test a plan against `CONTEXT.md` and `docs/adr/`, updating docs inline as decisions crystallise. |
 | [improve-codebase-architecture](skills/improve-codebase-architecture/) | Find deepening opportunities informed by `CONTEXT.md` and ADRs. |
 | [how-to-use](skills/how-to-use/) | Static user manual: how the workflow flows, what skills exist, where to start. |
@@ -83,7 +81,6 @@ A four-tier flow — initiative → feature → slice → task — that publishe
 | Skill | What it does |
 | --- | --- |
 | [ai-sdk](skills/ai-sdk/) | Build features with the Vercel AI SDK (`generateText`, `streamText`, agents, RAG). |
-| [trigger-dev](skills/trigger-dev/) | Write and configure Trigger.dev v4 background tasks. |
 | [chrome-devtools](skills/chrome-devtools/) | Browser automation, perf analysis, and debugging via Puppeteer. |
 
 ## Credit

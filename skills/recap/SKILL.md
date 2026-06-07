@@ -39,8 +39,6 @@ The translation rule has two flavors depending on what kind of change you're des
 - For internal tooling and workflow change, translate mechanism into the shift in how the team operates or what it unblocks. Reserve this for work that meaningfully changes the day, not minor skill churn.
   - **Good:** "We reworked how we slice large bodies of work into trackable pieces, so big efforts plan and execute faster going forward."
   - **Bad:** "We rewrote /decompose to create native GitHub sub-issues."
-  - **Good:** "We laid groundwork for thinking about the project at a higher level than individual features, with a north-star doc, a roadmap, and the concept of initiatives that group related features."
-  - **Bad:** "We added /to-spec, /north-star, and /roadmap-review skills."
 
 **Lead with user-facing change, include meaningful tooling work.** Product change is the load-bearing content — when both kinds of work happened in the same window, lead with what users would notice and weave the tooling work in afterward. When a window was dominated by tooling work (no product change shipped), the tooling work earns the lead, but framed in team-language outcomes rather than skill names.
 

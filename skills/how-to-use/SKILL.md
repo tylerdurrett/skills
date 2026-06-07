@@ -25,10 +25,8 @@ one-line fix or a multi-month initiative.
 
 ## The hierarchy
 
-Six tiers, top to bottom. Bigger tiers contain smaller tiers.
+Five tiers, top to bottom. Bigger tiers contain smaller tiers.
 
-- **Roadmap** (`docs/roadmap.md`): the capacity-honest sequencing of
-  bets the project is making.
 - **Initiative** (`size:initiative` issue): a directed effort toward an
   outcome. Groups multiple features.
 - **Feature** (`size:feature` issue): a meaningful unit of user-facing
@@ -129,16 +127,6 @@ promotions up the tree.
 - **`/tdd`** is a red-green-refactor build loop for new code.
 - **`/improve-codebase-architecture`** finds places the code wants to
   be cleaner.
-
-## Above the loop
-
-Two doc-side artifacts feed the loop without being part of it:
-
-- **`docs/north-star.md`**: the project's vision and direction.
-  Maintained by **`/north-star`**.
-- **`docs/roadmap.md`**: capacity-honest sequencing of initiatives in
-  three buckets (In flight, Next, Vibes backlog). Maintained by
-  **`/roadmap-review`**.
 
 ## Where to start right now
 
