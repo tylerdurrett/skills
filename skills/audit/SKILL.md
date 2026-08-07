@@ -127,10 +127,12 @@ GH_TOKEN="$(gh auth token)" codex exec \
   --skip-git-repo-check \
   -C "$(pwd)" \
   -o "$CODEX_OUT" \
-  '/check #<N>'
+  '/check #<N>' < /dev/null
 ```
 
 Notes on the invocation:
+
+- `< /dev/null` on the primary launch, not just the Step 3a relaunch. `codex exec` reads stdin when it is not a TTY ("Reading additional input from stdin..."), and a harness-backgrounded Bash call hands it a pipe that never closes — the leg then blocks at startup forever while looking superficially alive. Observed 2026-08-07: a verify pass sat 10+ minutes at 0.07s CPU doing zero work for exactly this reason. The redirect makes stdin an immediate EOF, so the wedge cannot occur.
 
 - `--sandbox workspace-write -c 'sandbox_workspace_write.network_access=true'` because `/check` needs network access (`gh issue view`, `gh issue list`) — the previous `--sandbox read-only` blocked network and the Codex leg silently fell through with `error connecting to api.github.com`. `workspace-write` allows network and writes inside the workspace; the skill's read-only contract is what stops writes, not the sandbox.
 - `--disable code_mode_host` because `codex-cli 0.144.0` enables the `code_mode_host` feature by default, routing shell commands through `/opt/homebrew/bin/codex-code-mode-host` — a binary the Homebrew cask does not ship. Without the flag every `codex exec` silently no-ops: it exits 0 with no `## Findings` block, so the leg falls through with zero signal. Exit code is an unreliable success signal here (0 even on this failure); detection relies on the presence of a terminal `## Findings` block, which the parser in Step 4 already requires. Revisit this flag if a future cask ships the host binary.
@@ -141,6 +143,68 @@ Notes on the invocation:
 - The trailing positional prompt is a single shell-quoted string with the issue reference — `'/check #<N>'`. The slash-command resolves inside Codex via the same `.agents/skills/` lookup Claude uses, and `/check` itself does the tier dispatch from labels, so this skill never has to special-case the mode at the Codex boundary.
 
 Kick off the backgrounded Codex Bash call first, then dispatch the Agent A `Task` in the same turn so both legs run concurrently. When the Agent A Task returns, read the backgrounded Codex output (Step 4). Do not block on Codex before dispatching Agent A — that serialises the two legs and doubles the audit cost for no gain.
+
+### 3a. Check on the Codex leg — liveness, not elapsed time
+
+The Codex leg buffers: nothing reaches `$CODEX_OUT` until the process exits, and piping through `tail` holds back stdout too. So "process alive, empty output" is the *identical* outward appearance of a leg deep in real work and a leg wedged at startup. Elapsed time cannot tell them apart, and neither can the empty output file. **Never report a long-running leg as "still working" on the strength of elapsed time alone** — say what the liveness signals show, or say you don't know yet.
+
+Two cheap signals separate the cases:
+
+```bash
+# The pgrep hit is often the wrapping shell; the codex binary is its child.
+P=$(pgrep -f 'codex exec' | head -1)
+ps -o pid,etime,time,%cpu,stat -p "$P"         # accumulated CPU (TIME), not wall clock
+pgrep -P "$P"                                  # children: the real codex process, plus any pipe reader
+lsof -p "$P" -a -i -nP 2>/dev/null | head -5   # established TLS connections to the API
+tail -c 500 <harness task output file>          # startup wedges announce themselves here
+```
+
+A **working** leg accumulates seconds of CPU within its first minute (order of `0:01`+ — it is parsing skills, running `gh`, streaming tokens). Its `%CPU` sitting at `0.0` is fine and expected — that is the process idle on a socket awaiting a model response. Judge by *accumulated* `TIME`, never by instantaneous `%CPU`.
+
+A **wedged** leg shows near-zero accumulated CPU (order of `0:00.07`) no matter how long it has run. Two observed variants:
+
+- **arg0-lock wedge** — zero network connections; the process takes its arg0 lock (`~/.codex/tmp/arg0/*/.lock`) and blocks at startup before ever opening its log DB or dialing the API. `lsof ~/.codex/logs_2.sqlite` names the holders (long-lived VS Code ChatGPT-extension instances are the prime suspect).
+- **stdin wedge** — the launch omitted `< /dev/null` and the stdout log's tail reads `Reading additional input from stdin...`; the process blocks on a pipe that never closes. This variant CAN hold an idle `ESTABLISHED` `:443` socket, so **an open socket alone never proves the leg is working** — a socket with frozen accumulated CPU and that stdin line in the log is a wedge, full stop. (Observed 2026-08-07: exactly this combination was misread as "working" for 10 minutes.)
+
+When CPU is frozen, break the tie with the stdout log tail: real work streams session-log lines; a wedge shows the stdin message or nothing at all. Neither variant recovers on its own.
+
+Diagnose before relaunching, or the retry wedges the same way. For the stdin wedge the fix is mechanical — relaunch with `< /dev/null` (already in both command templates). For the arg0-lock wedge, clear the holder first: long-lived codex instances and an oversized `~/.codex/logs_2.sqlite` + `-wal` pair are the prime suspects.
+
+Once a wedge is confirmed by both signals, killing is not premature — there is no in-flight work to lose:
+
+```bash
+kill "$P"   # kill the wrapper; its codex child goes with it
+```
+
+Relaunch **detached** rather than as a harness-backgrounded call, so no tool timeout can cut a legitimately slow run short:
+
+```bash
+CODEX_LOG="${CODEX_OUT%.md}.log"
+nohup env GH_TOKEN="$(gh auth token)" codex exec \
+  --sandbox workspace-write \
+  -c 'sandbox_workspace_write.network_access=true' \
+  --disable code_mode_host \
+  --ephemeral \
+  --skip-git-repo-check \
+  -C "$(pwd)" \
+  -o "$CODEX_OUT" \
+  '/check #<N>' > "$CODEX_LOG" 2>&1 < /dev/null &
+disown
+```
+
+`setsid` does not exist on macOS (`nohup: setsid: No such file or directory`) — `nohup … &` plus `disown` is the portable detach. Redirect stdin from `/dev/null` so the run can never block on a terminal read.
+
+Then wait with a backgrounded poller that returns the moment the file lands. A timeout then kills only the poller, never the leg, and the poller can simply be restarted:
+
+```bash
+while [ ! -s "$CODEX_OUT" ]; do
+  pgrep -f 'codex exec' >/dev/null || { echo "CODEX EXITED WITHOUT OUTPUT"; tail -20 "$CODEX_LOG"; exit 1; }
+  sleep 10
+done
+cat "$CODEX_OUT"
+```
+
+If the relaunched leg wedges identically, stop retrying and fall through to single-leg per the Codex-failure mode — with the loudness that mode demands.
 
 ### 4. Parse both legs' findings
 
@@ -418,6 +482,7 @@ Pick the next-step skill from the lifecycle loop:
 ## Failure modes
 
 - **Codex errors / times out / can't authenticate.** Continue with single-agent (Agent A only) findings. The synthesis comment's preamble paragraph notes that the cross-check leg fell through, and every finding is provenance-tagged `claude` only. Do not halt on Codex failure — the Agent A sub-agent's output is still useful. **A single-leg run has no corroboration, so it must be LOUD about it: state plainly in the chat walk-through and the synthesis comment preamble that this was single-leg and its findings are uncorroborated.** Before surfacing any blocker/BLOCKING-class finding on a single-leg run, give it a SECOND independent grounding pass — re-read the cited refs at the established baseline ref (per `/check`'s baseline rule) and confirm the claim holds. The cross-check that normally catches a hallucinated single-leg finding is absent; this second pass is its stand-in, and is what would have caught the #207 false halt (a fabricated `file:line` citation and a file wrongly called hallucinated because the wrong branch was inspected).
+- **Codex hangs — alive but doing no work.** The process runs indefinitely with near-zero accumulated CPU; the output file never appears. Two variants: the arg0-lock wedge (no network connections) and the stdin wedge (launch missed `< /dev/null`; log tail says `Reading additional input from stdin...`, and an idle established socket may be present — do not let it fool you). Either way this is a startup wedge, not slow analysis, and it does not resolve with patience. Detect it with the Step 3a liveness check rather than by waiting, kill it, diagnose the holder, and relaunch detached **once**. If the relaunch wedges the same way, treat the leg as failed and fall through to single-leg per the Codex-failure mode above. Do not describe a wedged leg to the user as "still working" — that misreports the run and burns wall-clock the audit never recovers.
 - **Codex's `## Findings` block is missing or malformed.** Same handling as Codex error — flag the leg as unparsable, treat it as if the cross-check fell through, continue with the other leg's findings. Surface the raw tail of `$CODEX_OUT` so the user can see what Codex produced.
 - **Agent A's `## Findings` block is missing or malformed.** The Task sub-agent returned something other than a clean `## Findings` block (conversational text, a truncated result, an error). Re-dispatch the Agent A Task once with a sharper instruction to return only the verbatim block. If it still comes back malformed, abort and surface the bug; do not silently fall through to Codex-only output (the symmetry would mask a regression in `/check`). Agent A is the in-house leg — a persistent malformation signals a regression worth stopping on, unlike a Codex leg that merely fell through.
 - **A child's body is irregularly shaped (no recognised insertion target).** Surface the issue and skip writes to that child. Continue with the remaining writes.
@@ -449,6 +514,8 @@ If the skill aborts mid-run, the file remains in `${TMPDIR:-/tmp}/` for forensic
 - **Backward-propagation bar is narrow.** Slice and task modes only. Schema changes, breaking API / type changes, sequencing reversals — and that's it. Anything broader spams sibling specs and parent specs with noise.
 - **Re-runs are idempotent on new-child creation.** The `**Surfaced by:** /audit run on <tier> #<N>` marker is the canonical dedupe key against existing native sub-issues of `<N>`. Re-running on the same spec produces only new children that don't already exist; existing audit-origin children are skipped.
 - **Re-runs append to today's synthesis comment.** Same-day re-runs append new bullets to today's existing dated comment rather than creating a second same-dated comment.
+- **Codex liveness is judged by accumulated CPU and the stdout log tail, never by elapsed time — and never by an open socket alone.** The leg buffers its `-o` output until exit, so a wedged run and a working run look identical from outside, and the stdin wedge holds an idle established socket while doing nothing. Report what `ps -o time` and the log tail actually show, or say the state is unknown; never infer progress from the process merely being alive or connected.
+- **Every `codex exec` launch redirects stdin from `/dev/null`** — the primary backgrounded launch and any relaunch alike. A non-TTY stdin that never closes makes codex block at startup on `Reading additional input from stdin...`; the redirect costs nothing and removes the failure class entirely.
 - **Codex sandbox is `workspace-write` with `sandbox_workspace_write.network_access=true`.** `/check` needs network for `gh issue view` / `gh issue list`. `read-only` blocks network in Codex and the leg falls through with `error connecting to api.github.com`; that's what the skill exists to catch via its single failure mode, not the desired steady state. The skill's read-only contract is what prevents writes, not the sandbox.
 - **The Codex leg gets `gh` auth via `GH_TOKEN="$(gh auth token)"`, never the keychain.** A keychain-stored token (the `gh auth login` default on macOS) is unreachable inside the sandbox and the leg falls through with `HTTP 401: Requires authentication`. Resolve the token in the unsandboxed parent shell and pass it as an env var; never write it to disk or hardcode it.
 - **`/check` remains independently invocable.** This skill orchestrates `/check`; it does not replace it. The single-agent path is faster and remains the default for cheap dry-runs.
