@@ -26,8 +26,6 @@ The maintainer's request shape picks the mode:
 
 Read the full spec (body, comments, labels, dates). Parse any prior triage notes so you don't re-ask resolved questions. Read `CONTEXT.md` if present, respect ADRs in the touched area, use the project's domain glossary. Read `.out-of-scope/*.md` and surface any prior rejection that resembles this spec.
 
-If any label starts with `wayfinder:`, stop without editing and route to `/wayfinder`; it is a pre-spec artifact, not missing-size drift.
-
 ### 2. Verify size and tier-completeness
 
 Two gating checks. `ready-for-agent` on a slice (and a clear-to-`/decompose` on a feature/initiative) is a promise that the next skill — `/decompose`, `/audit`, `/autopilot` — can actually run the spec. A size check alone does not keep that promise: a correctly-sized spec can still be missing the sections those skills consume. Both checks must pass before you apply the happy-path state.
@@ -66,8 +64,6 @@ For `bug`-category specs, attempt repro before transitioning state: read the rep
 
 Clear `needs-triage` and apply one of the seven canonical state labels (or, for initiative and feature specs ready to decompose, no state label at all). Pick from the happy-path table below; if none fits, drop to the non-happy-path table.
 
-A `feature-request` product spec isn't happy-path ready until the technical grill has added `## Implementation Decisions` / `## Testing Decisions` — check the body; if they're missing, route to `needs-grilling`.
-
 **Happy path** (size verified and tier-complete per step 2, and the spec is ready):
 
 | Size | New state | Next step |
@@ -89,7 +85,7 @@ Two hygiene rules for anything you write into a spec or brief — triage notes a
 
 | Outcome | When | Side effect | Next step |
 | ------- | ---- | ----------- | --------- |
-| `needs-grilling` | Spec wasn't technically aligned via `/grill-with-docs`. Two provenances: children synthesized by `/decompose` (aggressive at initiative→feature, optional at feature→slice, absent at slice→task) and `feature-request` product specs from `/shape-product`. | Judge by the body, not the label: if it lacks what downstream skills consume, run `/grill-with-docs <N>` (then drop the label and re-pick from the happy path); if it has since gained those sections, drop the stale label with a comment. | `/grill-with-docs <N>` (if grilling) or back to happy path. |
+| `needs-grilling` | Spec wasn't aligned via `/grill-with-docs`. Typical for children synthesized by `/decompose`; aggressive at initiative→feature, optional at feature→slice, absent at slice→task. | Run `/grill-with-docs <N>` now (then drop the label and re-pick from the happy path), or judge grilling unnecessary and drop the label with a comment. | `/grill-with-docs <N>` (if grilling) or back to happy path. |
 | `needs-info` | Waiting on the reporter. | Post triage notes (template below). | Reporter reply. |
 | `ready-for-human` | Needs judgment, external access, design decisions, or manual testing an agent can't safely do. | Note why in a comment. | Maintainer. |
 | `deferred` | Intentionally parked. | Short comment naming the trigger and the unpark condition. | `Stop.` |
@@ -122,11 +118,11 @@ The next-step skill comes from the "Next step" column of whichever table in step
 
 ## Show what needs attention
 
-Conversational mode. Exclude `wayfinder:*` artifacts from lifecycle queues and drift; mention active maps separately when useful. Then present these buckets in order:
+Conversational mode. Walk the tracker and present these buckets in order:
 
 1. **Freshly published specs (`needs-triage`)**: `/to-spec` left them with bookkeeping pending. The typical post-`/to-spec` state. Sort by size descending (initiative first, then feature, slice, task). Recommended action per spec: `/triage <N>`.
 
-2. **`needs-grilling`**: synthesized children and `feature-request` product specs awaiting technical alignment, oldest first. Group by parent. Recommended action: `/grill-with-docs <N>`, or `/triage <N>` to drop a stale label when the body already carries what downstream skills consume.
+2. **`needs-grilling`**: synthesized children awaiting alignment, oldest first. Group by parent. Recommended action: `/grill-with-docs <N>`, or `/triage <N>` if the maintainer wants to skip grilling.
 
 3. **Active features and slices (`in-progress`)**: specs that `/decompose` produced children for. Group by parent. Show the auto-rollup (`X of Y children shipped`). On an `in-progress` `size:slice` with open task children, the recommended next action is `/execute <task#>` on the lowest-numbered open task, not further triage on the slice itself.
 
@@ -198,8 +194,7 @@ Manual end-to-end checklist. For each fresh-spec row, `needs-triage` comes off a
 Plus four non-table cases:
 
 - **Tier-incomplete spec.** A spec missing a required section for its tier (step 2's table) does not reach `ready-for-agent` — it is filled inline from the alignment context, or dropped to `needs-info` / `needs-grilling` naming the missing sections. A `size:slice` with no `## Acceptance criteria` must never leave triage as `ready-for-agent`.
-- **`needs-grilling` spec.** The body is checked before deciding: `/grill-with-docs` runs when alignment is genuinely missing (then the label drops), or a stale label drops with a comment.
-- **`feature-request` spec on first triage.** Lands in `needs-grilling` unless the body already carries `## Implementation Decisions` / `## Testing Decisions`.
+- **`needs-grilling` spec.** Either `/grill-with-docs` runs (then the label drops), or the label drops with a comment.
 - **Hand-created spec lacking a size label.** Triage proposes a size, applies it after confirmation, then proceeds with the bookkeeping pass.
 - **Show-attention mode.** `/triage` with no arguments prints the buckets in order and ends with one concrete next-step recommendation embedded in prose (not the three-block template).
 

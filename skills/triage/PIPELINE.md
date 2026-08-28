@@ -10,8 +10,6 @@ For label vocabulary see [docs/agents/triage-labels.md](../../../docs/agents/tri
 
 You are running unattended under `/autopilot`: where `/triage` would confirm with a human (size verification, state choice), make the call yourself per the tables below. The expected happy path is `ready-for-agent`, but never force it — if the task genuinely warrants a non-happy-path state (`needs-info`, `ready-for-human`, …), apply it honestly. End with the structured summary the orchestrator asked for: the size verified (or changed), the state applied, and one sentence of reasoning.
 
-If any label starts with `wayfinder:`, refuse without edits; `/to-spec` must first create a separate sized spec.
-
 ## Verify size and tier-completeness
 
 `/decompose` should have labeled the child `size:task`. If the size looks right, proceed. If it looks wrong, change the label yourself — do not propose and wait for direction; default toward the larger tier when ambiguous.
@@ -25,7 +23,7 @@ If any label starts with `wayfinder:`, refuse without edits; `/to-spec` must fir
 
 ## Pick the next state
 
-Clear `needs-triage` and apply one state label. Pick from the happy-path table; if none fits, drop to the non-happy-path table. A `feature-request` product spec isn't happy-path ready until the technical grill has added `## Implementation Decisions` / `## Testing Decisions` — check the body; if they're missing, route to `needs-grilling`.
+Clear `needs-triage` and apply one state label. Pick from the happy-path table; if none fits, drop to the non-happy-path table.
 
 **Happy path** (size verified and tier-complete, and the spec is ready):
 
@@ -44,7 +42,7 @@ Two hygiene rules for anything you write into a spec or brief — triage notes a
 
 | Outcome | When | Side effect | Next step |
 | ------- | ---- | ----------- | --------- |
-| `needs-grilling` | Spec wasn't technically aligned via `/grill-with-docs`. Two provenances: children synthesized by `/decompose` (aggressive at initiative→feature, optional at feature→slice, absent at slice→task) and `feature-request` product specs from `/shape-product`. | Judge by the body, not the label: if it lacks what downstream skills consume, run `/grill-with-docs <N>` (then drop the label and re-pick from the happy path); if it has since gained those sections, drop the stale label with a comment. | `/grill-with-docs <N>` (if grilling) or back to happy path. |
+| `needs-grilling` | Spec wasn't aligned via `/grill-with-docs`. Typical for children synthesized by `/decompose`; aggressive at initiative→feature, optional at feature→slice, absent at slice→task. | Run `/grill-with-docs <N>` now (then drop the label and re-pick from the happy path), or judge grilling unnecessary and drop the label with a comment. | `/grill-with-docs <N>` (if grilling) or back to happy path. |
 | `needs-info` | Waiting on the reporter. | Post triage notes naming what's established and what's missing. | Reporter reply. |
 | `ready-for-human` | Needs judgment, external access, design decisions, or manual testing an agent can't safely do. | Note why in a comment. | Maintainer. |
 | `deferred` | Intentionally parked. | Short comment naming the trigger and the unpark condition. | `Stop.` |
