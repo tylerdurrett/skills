@@ -1,6 +1,6 @@
 # Issue Labels
 
-Issues are labeled along four orthogonal axes: **size** (what tier the work sits at), **state** (where it sits in the maintainer-review workflow), **lifecycle** (whether active work has begun), and **category** (what kind of work the issue represents). Most issues need a value on the first two; the third is set automatically by lifecycle skills; the fourth is optional and applied opportunistically.
+Lifecycle specs are labeled along four orthogonal axes: **size** (what tier the work sits at), **state** (where it sits in the maintainer-review workflow), **lifecycle** (whether active work has begun), and **category** (what kind of work the issue represents). Most specs need a value on the first two; the third is set automatically by lifecycle skills; the fourth is optional and applied opportunistically. Wayfinder artifacts are the pre-spec exception described below.
 
 ## Vocabulary
 
@@ -8,7 +8,7 @@ The canonical hierarchy:
 
 > initiative → feature → slice → task → PR
 
-Every issue on the tracker is a **spec** (the generic name for a captured set of specifications, regardless of tier). Sizing happens at triage. Bigger sizes decompose into smaller-sized children until everything reaches task-size, at which point it ships.
+Every lifecycle issue on the tracker is a **spec** (the generic name for a captured set of specifications, regardless of tier). Sizing happens at triage. Bigger sizes decompose into smaller-sized children until everything reaches task-size, at which point it ships.
 
 | Term       | Meaning                                                                                       |
 | ---------- | --------------------------------------------------------------------------------------------- |
@@ -87,6 +87,18 @@ Optional labels that describe what kind of work a spec represents, orthogonal to
 
 `cleanup` specs arrive in one of two states. The default is `cleanup` + `needs-triage`: they enter triage like any other spec, the label just signals non-urgent housekeeping rather than user-facing change. The exception is `/batch`'s auto-defer stage (`.agents/skills/batch/workflow.js`), which has already verified every finding against the merged code and files genuinely task-sized bundles pre-triaged as `cleanup` + `size:task` + `ready-for-agent` — skipping `needs-triage` and going straight to batchable. `/triage cleanup` is a useful periodic sweep to keep the default-path queue from rotting.
 
+## Wayfinder classification (`wayfinder:*`)
+
+Wayfinder maps and decision tickets are optional pre-spec artifacts outside the canonical hierarchy and four axes. Each carries exactly one of these mutually exclusive labels and no size, state, lifecycle, or category label.
+
+| Label                   | Meaning                                                       |
+| ----------------------- | ------------------------------------------------------------- |
+| `wayfinder:map`         | Shared index for one decision-mapping effort.                 |
+| `wayfinder:research`    | Decision waits on primary-source facts.                       |
+| `wayfinder:prototype`   | Decision waits on an artifact and explicit human verdict.    |
+| `wayfinder:grilling`    | Decision requires a live, one-question-at-a-time interview.   |
+| `wayfinder:task`        | Prerequisite action needed to decide, never destination work. |
+
 ## Label inventory
 
-All seven state-axis labels, the `in-progress` lifecycle label, the four `size:*` labels, and the three category labels live on `<owner>/<repo>`. Edit the right-hand column above if labels are renamed.
+All seven state-axis labels, the `in-progress` lifecycle label, the four `size:*` labels, the three category labels, and the five `wayfinder:*` labels live on `<owner>/<repo>`. Edit the right-hand column above if labels are renamed.

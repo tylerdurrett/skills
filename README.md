@@ -18,7 +18,7 @@ mkdir -p .claude && npx skills@latest add tylerdurrett/skills
 
 ## First-time setup
 
-Several of the engineering skills below (`triage`, `execute`, `ship`, `audit`, `decompose`, `status`, `recap`, `to-spec`, `defer`, `check`) assume a configured tracker, label vocabulary, integration-branch convention, and a `docs/agents/` directory in your repo. Run `setup-tdog-skills` once after install to scaffold all of that:
+Several of the engineering skills below (`wayfinder`, `triage`, `execute`, `ship`, `audit`, `decompose`, `status`, `recap`, `to-spec`, `defer`, `check`) assume a configured tracker, label vocabulary, integration-branch convention, and a `docs/agents/` directory in your repo. Run `setup-tdog-skills` once after install to scaffold all of that:
 
 ```
 /setup-tdog-skills
@@ -33,6 +33,18 @@ It walks you through two decisions (triage label vocabulary, single- vs multi-co
 | Skill | What it does |
 | --- | --- |
 | [setup-tdog-skills](skills/setup-tdog-skills/) | Scaffold the `docs/agents/` directory, the integration-branch ADR, and the `## Agent skills` memory block the workflow skills assume. Run once per repo. |
+
+### Pre-spec decision mapping (optional)
+
+Wayfinder is for work too large for one 100K-token agent session; install it with the four supporting skills it invokes.
+
+| Skill | What it does |
+| --- | --- |
+| [wayfinder](skills/wayfinder/) | Map a multi-session idea into decision tickets, resolve them one at a time, then hand off to `/to-spec`. |
+| [research](skills/research/) | Investigate a question against high-trust primary sources and capture the findings in the repo. |
+| [grilling](skills/grilling/) | Resolve a decision through a one-question-at-a-time interview. |
+| [domain-modeling](skills/domain-modeling/) | Build and sharpen the project's domain language and durable decisions. |
+| [prototype](skills/prototype/) | Build and archive a throwaway prototype that answers a design question. |
 
 ### Spec lifecycle (issue-tracker workflow)
 

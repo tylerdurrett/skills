@@ -1,0 +1,4 @@
+interface:
+  display_name: "Prototype"
+  short_description: "Prototype and preserve a design decision"
+  default_prompt: "Use $prototype to build and archive a runnable prototype for this design question."

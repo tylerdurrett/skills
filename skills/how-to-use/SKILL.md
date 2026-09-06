@@ -38,11 +38,20 @@ Five tiers, top to bottom. Bigger tiers contain smaller tiers.
 - **PR**: the actual code change, opened against the parent's
   integration branch.
 
-Every issue on the tracker is a **spec**, regardless of tier; the size
-label is what tells you which tier it sits at. A slice can sit under a
-feature (typical) or stand alone as an orphan; behavior is identical.
+Every lifecycle issue on the tracker is a **spec**, regardless of tier;
+the size label is what tells you which tier it sits at. A slice can sit
+under a feature (typical) or stand alone as an orphan; behavior is
+identical. Wayfinder maps and tickets are pre-spec decision work outside
+this hierarchy.
 
 ## The loop
+
+**Optionally before the loop**, for a foggy, multi-session idea:
+
+- **`/wayfinder`** maps the fog into decision tickets, each sized to one
+  100K-token agent session, and resolves them with supporting skills such
+  as **`/research`**, **`/grilling`**, **`/domain-modeling`**, and
+  **`/prototype`**. Once the map is clear, it hands off to `/to-spec`.
 
 **Once at the top**, per idea:
 
@@ -104,6 +113,9 @@ Four orthogonal axes on every spec:
 - **Category axis** (`bug` / `enhancement` / `cleanup`): optional, for
   filtering.
 
+The mutually exclusive **`wayfinder:*`** labels classify pre-spec maps
+and decision tickets separately; they are not a fifth lifecycle axis.
+
 ## Integration branches
 
 Code flows up the hierarchy the same way the spec hierarchy flows down:
@@ -131,6 +143,7 @@ promotions up the tree.
 ## Where to start right now
 
 - **You have work in progress:** run **`/status`**.
+- **You have a foggy, multi-session idea:** run **`/wayfinder`**.
 - **You have an idea brewing:** run **`/grill-with-docs`**.
 - **You're not sure:** run **`/status`**.
 ```

@@ -1,6 +1,6 @@
 ---
 name: setup-tdog-skills
-description: Scaffold the per-repo configuration the tdog engineering skills assume — an `## Agent skills` block in CLAUDE.md/AGENTS.md, the canonical docs under `docs/agents/`, and the integration-branch ADR under `docs/adr/`. Run before first use of `/triage`, `/to-spec`, `/decompose`, `/check`, `/audit`, `/execute`, `/ship`, `/status`, `/recap`, `/defer`, or `/grill-with-docs` — or any time those skills appear to be missing context about the issue tracker, the label vocabulary, the integration-branch convention, or the domain doc layout.
+description: Scaffold the per-repo configuration the tdog engineering skills assume — an `## Agent skills` block in CLAUDE.md/AGENTS.md, the canonical docs under `docs/agents/`, and the integration-branch ADR under `docs/adr/`. Run before first use of `/wayfinder`, `/triage`, `/to-spec`, `/decompose`, `/check`, `/audit`, `/execute`, `/ship`, `/status`, `/recap`, `/defer`, or `/grill-with-docs` — or any time those skills appear to be missing context about the issue tracker, the label vocabulary, the integration-branch convention, or the domain doc layout.
 disable-model-invocation: true
 ---
 
@@ -73,9 +73,9 @@ Plus the lifecycle label `in-progress` and the category labels `bug`, `enhanceme
 
 Default: each role's string equals its name. Ask the user only whether they want to override any of those strings. If they do, capture the mapping in `docs/agents/triage-labels.md`'s "What replaced what" table so `/triage` and `/status` recognise both old and new during transition.
 
-> **Don't ask about the size tier labels.** `size:initiative`, `size:feature`, `size:slice`, `size:task` are **fixed strings** the workflow skills grep for. Renaming them would mean editing every skill that references them, which is out of scope for the setup. Document them as immutable in the template and move on.
+> **Don't ask about the size tier or Wayfinder labels.** `size:initiative`, `size:feature`, `size:slice`, `size:task`, `wayfinder:map`, `wayfinder:research`, `wayfinder:prototype`, `wayfinder:grilling`, and `wayfinder:task` are **fixed strings** the workflow skills grep for. Renaming them would mean editing every skill that references them, which is out of scope for the setup. Document them as immutable in the template and move on.
 
-Create the labels on the remote so `/triage` doesn't fail on first use:
+Create the labels on the remote so `/triage` and `/wayfinder` don't fail on first use:
 
 ```bash
 gh label create needs-triage     --color FBCA04 --description "Maintainer needs to evaluate" 2>/dev/null
@@ -93,9 +93,14 @@ gh label create size:initiative  --color BFD4F2 --description "Multi-feature eff
 gh label create size:feature     --color BFD4F2 --description "Multi-slice feature" 2>/dev/null
 gh label create size:slice       --color BFD4F2 --description "Multi-task vertical cut" 2>/dev/null
 gh label create size:task        --color BFD4F2 --description "One PR's worth of work" 2>/dev/null
+gh label create wayfinder:map       --color 5319E7 --description "Multi-session decision map; outside spec lifecycle" 2>/dev/null
+gh label create wayfinder:research  --color C2E0C6 --description "Wayfinder primary-source research ticket" 2>/dev/null
+gh label create wayfinder:grilling  --color D4C5F9 --description "Wayfinder human decision session" 2>/dev/null
+gh label create wayfinder:prototype --color F9D0C4 --description "Wayfinder prototype awaiting a human verdict" 2>/dev/null
+gh label create wayfinder:task      --color CFD3D7 --description "Wayfinder prerequisite action" 2>/dev/null
 ```
 
-`gh label create` 422's on duplicates; `2>/dev/null` keeps the run idempotent. If the user picked custom strings, substitute them in the call before running.
+`gh label create` 422's on duplicates; `2>/dev/null` keeps the run idempotent. If the user picked custom state-label strings, substitute only those in the call before running; the size and Wayfinder label strings stay fixed.
 
 #### Section B — Domain docs
 
@@ -246,12 +251,12 @@ After a fresh run in a previously-unconfigured repo, all of the following should
 2. `ls docs/adr/` includes `NNNN-issues-branch-from-parent-integration-branch.md` (where `NNNN` is `0001` or the next free slot if `0001` was already taken), with the references in `docs/agents/README.md` and `docs/agents/issue-tracker.md` matching the chosen number.
 3. `CLAUDE.md` (or `AGENTS.md`) has a bare `## Agent skills` block that points at `docs/agents/README.md` and names the tracker — no inline restatement of labels, branches, domain, lifecycle, or output format.
 4. `grep -rn "<owner>/<repo>" docs/` returns nothing.
-5. `gh label list` includes all seven state labels, `in-progress`, the four `size:*` labels, and the three category labels (including `cleanup`).
-6. `/triage` and `/execute` against fresh specs run without complaining about missing doc paths.
+5. `gh label list` includes all seven state labels, `in-progress`, the four `size:*` labels, the three category labels (including `cleanup`), and the five `wayfinder:*` labels.
+6. `/wayfinder`, `/triage`, and `/execute` against fresh work run without complaining about missing doc paths.
 
 ## What this skill does NOT do
 
 - It does not edit the workflow skills under `skills/`. Those are the published library; the user's repo's `docs/agents/` is the configuration surface.
 - It does not seed `CONTEXT.md` or any ADR other than the integration-branch one. `/grill-with-docs` is the producer for both.
 - It does not create initial specs or initiatives. `/to-spec` is the producer.
-- It does not support tracker backends other than GitHub. Local markdown, Linear, Jira, and GitLab would need adapter work in the consumer skills (`/triage`, `/decompose`, `/execute`, `/ship`, `/defer`, `/status`, `/to-spec`, `/audit`, `/check`, `/recap`) before they could be offered here. The local-markdown template file at `templates/agents/issue-tracker-local-markdown.md` is kept as forward-compatible scaffolding for that future work.
+- It does not support tracker backends other than GitHub. Local markdown, Linear, Jira, and GitLab would need adapter work in the consumer skills (`/wayfinder`, `/triage`, `/decompose`, `/execute`, `/ship`, `/defer`, `/status`, `/to-spec`, `/audit`, `/check`, `/recap`) before they could be offered here. The local-markdown template file at `templates/agents/issue-tracker-local-markdown.md` is kept as forward-compatible scaffolding for that future work.

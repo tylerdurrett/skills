@@ -28,9 +28,11 @@ Five tiers, top to bottom. Each tier is a unit of work; bigger tiers contain sma
 | **Task**       | One PR's worth of work. The leaf.                                                       | GitHub issue, `size:task`         |
 | **PR**         | The actual code change, opened against the parent's integration branch.                 | GitHub PR                         |
 
-Every issue on the tracker is a **spec** (the generic name for a captured set of specifications). Size is what distinguishes one tier from another, not the artifact type. A spec sized as `size:slice` always contains multiple tasks; a spec sized as `size:feature` always contains multiple slices; and so on. If a candidate decomposition would yield exactly one child, the parent should have been sized one tier smaller. Right-sizing is iterative.
+Every lifecycle issue on the tracker is a **spec** (the generic name for a captured set of specifications). Size is what distinguishes one tier from another, not the artifact type. A spec sized as `size:slice` always contains multiple tasks; a spec sized as `size:feature` always contains multiple slices; and so on. If a candidate decomposition would yield exactly one child, the parent should have been sized one tier smaller. Right-sizing is iterative.
 
 A slice can sit under a feature (typical) or be an orphan (ad-hoc multi-task work, not part of any feature). The behavior is identical either way.
+
+Large, foggy ideas may take an optional pre-spec on-ramp through `/wayfinder`. Its map and decision tickets sit outside this hierarchy; once resolved, `/to-spec` turns the map into a normally sized spec.
 
 ## The loop
 
@@ -76,6 +78,12 @@ The triage→decompose→check trio runs once per tier and is what makes the sys
 ## The skills
 
 The full skill set, organized by phase of the loop.
+
+### Pre-spec (optional)
+
+| Skill        | What it does                                                                                           |
+| ------------ | ------------------------------------------------------------------------------------------------------ |
+| `/wayfinder` | Maps a multi-session idea into decision tickets, resolves them one at a time, then hands off to `/to-spec`. |
 
 ### Capture (once per idea)
 
@@ -126,6 +134,8 @@ Four orthogonal axes. Full detail in [triage-labels.md](triage-labels.md).
 - **Lifecycle axis** (`in-progress` / closed): whether active work has begun. Set automatically by lifecycle skills.
 - **Category axis** (`bug` / `enhancement` / `cleanup`): kind of work, optional, for filtering.
 
+`wayfinder:*` is a separate classification for pre-spec artifacts, not a fifth axis.
+
 `needs-grilling` is the load-bearing new state. It applies when a spec was synthesized from a parent's decomposition rather than grilled directly. Aggressive at the initiative→feature boundary; optional at feature→slice; absent at slice→task.
 
 ## Integration branches
@@ -150,6 +160,7 @@ Every workflow skill that produces a durable artifact ends with the same three-b
 
 ## Where to start
 
+- **You have a multi-session idea still wrapped in fog**: run `/wayfinder`.
 - **You have an idea brewing**: run `/grill-with-docs` first.
 - **You have an alignment session ready to capture**: run `/to-spec`.
 - **You have a freshly captured spec on the tracker**: run `/triage <N>` to verify size, seed bookkeeping, and route it.

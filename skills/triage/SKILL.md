@@ -22,6 +22,8 @@ The maintainer's request shape picks the mode:
 
 ## Per-spec triage
 
+Before any per-spec path, fetch the issue's labels. If any starts with `wayfinder:`, refuse without edits and route it to `/wayfinder`; Wayfinder artifacts are pre-spec decision work, not members of the sized lifecycle.
+
 ### 1. Gather context
 
 Read the full spec (body, comments, labels, dates). Parse any prior triage notes so you don't re-ask resolved questions. Read `CONTEXT.md` if present, respect ADRs in the touched area, use the project's domain glossary. Read `.out-of-scope/*.md` and surface any prior rejection that resembles this spec.

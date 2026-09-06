@@ -11,6 +11,10 @@ A "spec" is the generic captured artifact regardless of tier. Size is set at pub
 
 For tracker mechanics see [docs/agents/issue-tracker.md](../../../docs/agents/issue-tracker.md); for label vocabulary see [docs/agents/triage-labels.md](../../../docs/agents/triage-labels.md); for the canonical end-of-run output see [docs/agents/output-format.md](../../../docs/agents/output-format.md).
 
+## Wayfinder handoff
+
+Accept a `wayfinder:map` only when every ticket is closed and no fog remains. Synthesize from full resolutions and linked artifacts, and link the map and resulting spec in both directions (`**Wayfinder map:** #<M>` / `**Resulting spec:** #<N>`). The map is provenance, never the spec's native parent.
+
 ## Process
 
 1. **Ground the spec.** Read `CONTEXT.md` if present, respect ADRs in the touched area, use the project's domain glossary throughout. Sketch the major modules you'd build or modify; favor deep modules (testable in isolation, simple interface, rarely-changing).
@@ -26,7 +30,7 @@ For tracker mechanics see [docs/agents/issue-tracker.md](../../../docs/agents/is
 
    Default toward the larger tier when scope is ambiguous. A mis-sized `size:task` blows up mid-execution; a mis-sized `size:feature` is fixed by `/triage`.
 
-3. **Infer a parent.** Walk the conversation for explicit `#N` references first; use that if present. Otherwise, when scope suggests the spec belongs under existing work, list candidates one tier larger:
+3. **Infer a parent.** Walk the conversation for explicit `#N` references first; use a referenced lifecycle spec if present. Ignore `wayfinder:*` issues. Otherwise, when scope suggests the spec belongs under existing work, list candidates one tier larger:
 
    ```bash
    gh issue list --label "size:initiative" --label "size:feature" --label "size:slice" --state open \
@@ -51,7 +55,7 @@ For tracker mechanics see [docs/agents/issue-tracker.md](../../../docs/agents/is
 
    `needs-triage` signals that the bookkeeping pass is still pending: `/triage` will declare the integration branch (for `size:feature` / `size:slice`), seed the sticky `<!-- progress-comment:initiative -->` comment (for `size:initiative`), and apply the state label (`ready-for-agent` / `needs-grilling` / etc.).
 
-6. **Attach as a native sub-issue (only when a parent was inferred).** Resolve the child's database `id` first, then POST, then prepend `**Part of:** #<P>` to the body:
+6. **Attach as a native sub-issue (only when a lifecycle parent was inferred).** Resolve the child's database `id` first, then POST, then prepend `**Part of:** #<P>` to the body. Keep any `**Wayfinder map:**` line below it:
 
    ```bash
    child_id=$(gh api repos/<owner>/<repo>/issues/<N> --jq .id)
