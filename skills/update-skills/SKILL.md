@@ -78,8 +78,32 @@ Read the actual diff of every pull, merge, installation, removal, and wiring cha
 
 Confirm verbatim pulls and installations match the library byte-for-byte; that is sufficient validation of the copy and must not depend on an optional YAML parser. Validate frontmatter for merged or adapted skills with the repository's validator when available, otherwise use a structural check. Do not report an unavailable optional validator unless validation cannot be completed. Run `git diff --check` and verify every created symlink resolves.
 
-## 6. Report and commit
+## 6. Keep `skills-lock.json` in step
 
-Report per skill: **pulled**, **merged**, **installed**, **decision required**, **backport candidate**, **uninstalled library skill**, or **skipped**, plus adaptations and follow-ons. Include the relevant library SHAs.
+The `skills` CLI (`npx skills add`) records each installed skill in `skills-lock.json` at the consumer root, and its `check`/`update` commands compare that entry's `computedHash` against the library. Nothing above touches the file, so when it exists, refresh it in the same change; when it doesn't, don't create one.
+
+- **Pulled, merged, or installed** — set `computedHash` to the hash of the **library's** copy at `<library-head>`, not the consumer's. A merged file carries consumer adaptations, and hashing those would make `skills update` treat them as stale and overwrite them. New entries copy the shape of the existing ones (`source`, `sourceType`, `skillPath: skills/<name>/SKILL.md`, `computedHash`).
+- **Removed** — delete the entry. Consumer-only skills never get one.
+- Keep entries sorted by name and the file as two-space JSON with a trailing newline, as the CLI writes it.
+
+The hash is sha256 over every regular file under the skill directory, skipping `.git` and `node_modules`, in `localeCompare` order of the forward-slash relative path, feeding each path and then its bytes. This reproduces the CLI's `computeSkillFolderHash` exactly:
+
+```bash
+node -e '
+const {createHash}=require("crypto"),fs=require("fs"),p=require("path");
+const root=process.argv[1],files=[];
+(function walk(d){for(const e of fs.readdirSync(d,{withFileTypes:true})){
+  if(e.isDirectory()){if(e.name!==".git"&&e.name!=="node_modules")walk(p.join(d,e.name));}
+  else if(e.isFile())files.push(p.relative(root,p.join(d,e.name)).split(p.sep).join("/"));}})(root);
+files.sort((a,b)=>a.localeCompare(b));
+const h=createHash("sha256");for(const f of files){h.update(f);h.update(fs.readFileSync(p.join(root,f)));}
+console.log(h.digest("hex"));' <library>/skills/<name>
+```
+
+Before writing, recompute one untouched skill and confirm it reproduces its existing entry; if it doesn't, stop and say so rather than write values nobody can verify.
+
+## 7. Report and commit
+
+Report per skill: **pulled**, **merged**, **installed**, **decision required**, **backport candidate**, **uninstalled library skill**, or **skipped**, plus adaptations, follow-ons, and lock-file updates. Include the relevant library SHAs.
 
 Commit completed changes to the consumer repo per its landing conventions (for skill/doc/config tweaks, typically straight to `main`), citing the library SHAs. If a decision is required, pause before the commit, ask the concrete question, and resume after the answer rather than ending the workflow early.
