@@ -79,13 +79,11 @@ If the work was surfaced while executing task #T, read #T's body and use #T's ow
 
 For each approved issue, run `gh issue create` with:
 
-- **Labels:** `needs-triage,cleanup` — the default for conversational/manual runs. `needs-triage` puts it in the normal triage flow; `cleanup` flags it as housekeeping for periodic sweeps. See the pre-triaged exception below.
+- **Labels:** `needs-triage,cleanup` — the default for conversational/manual runs. `needs-triage` puts it in the normal triage flow; `cleanup` flags it as housekeeping for periodic sweeps.
 - **Title:** action-oriented and concrete. "Centralize X in `<destination-package>`" beats "X is duplicated."
 - **Body:** use the template below. The `**Part of:**` line (step 5) is the machine-readable lineage `/execute` follows; the `**Surfaced by:**` line is the required human breadcrumb so future-you can recover the context.
 
 Use a HEREDOC for the body so markdown formatting is preserved. After each `gh` call, surface the returned issue URL to the user.
-
-**Pre-triaged exception (batch auto-defer).** An unattended deferrer that has already verified every finding against the merged code — canonically `/batch`'s auto-defer stage in [workflow.js](../batch/workflow.js) — may file a genuinely task-sized bundle (one focused PR lands all of it, no open design questions) pre-triaged: `cleanup` + `size:task` + `ready-for-agent`, skipping `needs-triage`. For those issues the body IS the agent brief, so the Scope section must be precise. Anything bigger or murkier still goes in as `cleanup` + `needs-triage` — never force-fit.
 
 ### 7. Print the end-of-run output
 
@@ -132,7 +130,7 @@ Do **not** offer to start work on the issues. Defer's job ends at the file syste
 
 ## Hard rules
 
-- **`needs-triage` + `cleanup` is the default.** Without `needs-triage`, the issue won't enter the triage state machine and will get lost. The one exception is the pre-triaged batch auto-defer path (step 6): a verified, task-sized bundle filed as `cleanup` + `size:task` + `ready-for-agent`.
+- **`needs-triage` + `cleanup` is the default.** Without `needs-triage`, the issue won't enter the triage state machine and will get lost.
 - **Verify before opening.** Step 2 is non-optional. A stale issue in the tracker is worse than no issue.
 - **Link back to the surfacing PR/branch.** The `Surfaced by:` line is the audit trail.
 - **Set `Part of:` to the surfacing spec's parent, never the spec itself.** Sizes step down by one tier (see [execute](../execute/SKILL.md), "Base branch"). If you can't resolve it, leave it off and tell the user — never guess.

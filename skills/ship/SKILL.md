@@ -3,8 +3,6 @@ name: ship
 description: Tier-aware ship skill. Reads the input spec's `size:*` label and dispatches. `size:task` squash-merges the PR, closes the task, prunes the local feature branch; falls back to a defensive close when no open PR exists. `size:slice` opens a promotion PR onto the feature integration branch (or `main` for orphans), prompts merge-now-or-review, closes the slice, deletes the local slice branch. `size:feature` opens the final promotion PR onto `main`, closes the feature, deletes the local feature branch, ticks the parent initiative's progress comment if any. `size:initiative` refuses (initiatives close manually). Use when the user says "ship task <N>", "ship slice <S>", "ship feature <F>", "land PR <#>", "close out slice <S>", "promote feature <F>", or "close task <N> defensively".
 ---
 
-*Batch-mode agents: read [TASK.md](TASK.md) instead of this file — it is the /batch-facing task-tier subset (T1–T8). Keep the two in sync when editing either.*
-
 # Ship
 
 A single tier-aware ship skill. The user says "ship the thing"; the skill reads the input's `size:*` label and picks the right mechanics. The moment-of-truth (intermediate vs. user-visible production ship) lives in the outcome line, not in the skill's name.
@@ -240,7 +238,7 @@ The flow is stateful but presents as a single invocation: it detects whether a p
 
 ### P1. Verify all native sub-issues are closed
 
-Partition open children into **blocking** (real scope that must land before promotion) and **deferred** (`cleanup`- or `deferred`-labeled housekeeping — typically findings parked by `/defer` or auto-filed by a `/batch` Settle pass, explicitly future work):
+Partition open children into **blocking** (real scope that must land before promotion) and **deferred** (`cleanup`- or `deferred`-labeled housekeeping — typically findings parked by `/defer`, explicitly future work):
 
 ```bash
 owner_repo=$(gh repo view --json nameWithOwner -q .nameWithOwner)
@@ -486,7 +484,7 @@ If `open_deferred` (from P1) is non-empty, add a **Deferred work carried forward
 
 ```
 > Deferred work carried forward (not blocking, but now in `<promotion-target>` un-addressed): #<N> <title> · ...
->   Run `/triage` on each to size and ready it, then `/execute` (or `/batch`) before they rot.
+>   Run `/triage` on each to size and ready it, then `/execute` before they rot.
 ```
 
 Next step:

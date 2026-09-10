@@ -6,14 +6,13 @@
 // `class <ids> done|inProgress|notStarted;` assignment lines. classDefs, nodes, edges, the
 // legend, and everything outside the DAG section are preserved byte-for-byte.
 //
-// Why a script (not the agent flow): /ship and /batch refresh colors frequently and, under
-// /batch, concurrently. Re-running the full agent flow each time would (a) cost an agent per
+// Why a script (not the agent flow): /ship refreshes colors after every close/merge, and
+// sibling runs can overlap. Re-running the full agent flow each time would (a) cost an agent per
 // refresh and (b) let edge inference drift run-to-run, making the chart flicker. Recoloring is
 // pure mechanism, so it lives in code: fast, churn-free, and safe to fire on every transition.
 //
 // Concurrency: each run re-reads live state and writes a COMPLETE body via one atomic
-// `gh issue edit`. So a lost update (two siblings racing) self-heals on the next call, and the
-// /batch workflow's end-of-run sweep guarantees the final resting state is correct.
+// `gh issue edit`. So a lost update (two siblings racing) self-heals on the next call.
 //
 // Usage:  node recolor.mjs <issue-number>
 // Exit:   0 = recolored (or a no-op: no DAG section / no change). 1 = malformed DAG block. 2 = bad args.
@@ -101,7 +100,7 @@ if (newBody === body) {
   process.exit(0)
 }
 
-// Unique temp file: /batch's parallel agents share /tmp, so a fixed path would collide.
+// Unique temp file: concurrent runs share /tmp, so a fixed path would collide.
 const dir = mkdtempSync(join(tmpdir(), 'dag-recolor-'))
 const file = join(dir, `issue-${issue}-body.md`)
 writeFileSync(file, newBody)

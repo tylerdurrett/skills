@@ -90,7 +90,7 @@ The section lives under a `## Sub-issue DAG` heading.
 - If the body already has a `## Sub-issue DAG` section, **replace it in place** (heading through its trailing legend line) so re-running refreshes the chart rather than stacking duplicates.
 - Otherwise, **append** the section to the end of the body.
 
-Edit via a body file, not inline shell heredocs that can mangle the existing Markdown. Use a **unique** temp path (`mktemp`) — never a fixed `/tmp/dag-body.md`, which collides when several refreshes run at once (e.g. under `/batch`):
+Edit via a body file, not inline shell heredocs that can mangle the existing Markdown. Use a **unique** temp path (`mktemp`) — never a fixed `/tmp/dag-body.md`, which collides when several refreshes run at once:
 
 ```bash
 body_file=$(mktemp "${TMPDIR:-/tmp}/dag-body.XXXXXX")
@@ -129,9 +129,8 @@ It reads `<N>`'s body, and if it has a `## Sub-issue DAG` section, re-queries th
 This is the hook other skills use to keep a chart live without re-running the agent flow:
 
 - **`/ship`** runs it against the closed child's parent after every close/merge, at any tier — the merged node turns green. Best-effort; a stale chart never blocks a ship.
-- **`/batch`** runs it when a task's pipeline starts (the node turns amber) and once more as a final sweep after all tasks settle. The per-merge green comes free via `/ship`.
 
-Because each run recomputes every node from live state and writes a complete body, concurrent refreshes are last-writer-wins with no corruption: a lost update self-heals on the next call, and `/batch`'s end-of-run sweep guarantees the final state is correct. It does **not** add or remove nodes — if the child set changed, re-run the full authoring flow (Steps 1–6) to restructure.
+Because each run recomputes every node from live state and writes a complete body, concurrent refreshes are last-writer-wins with no corruption: a lost update self-heals on the next call. It does **not** add or remove nodes — if the child set changed, re-run the full authoring flow (Steps 1–6) to restructure.
 
 ## What this skill does NOT do
 

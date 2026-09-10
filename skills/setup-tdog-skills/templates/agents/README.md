@@ -101,13 +101,11 @@ The full skill set, organized by phase of the loop.
 | `/check`     | Single-agent sanity check on a decomposition. Tier-aware: initiative input runs Outcome / Definition-of-done coverage; feature input runs user-story coverage; slice input runs AC coverage + codebase grounding + per-task sizing + sequencing; task input runs codebase grounding + AC sanity-check, with lightweight sibling-context checks when the task has a parent. Read-only, fast, conversational. |
 | `/audit`     | Multi-agent (Claude + Codex) version of `/check`. Synthesizes findings with provenance, gates on user approval, writes back additive body edits + a synthesis comment. Reach for it when the cost of a flawed decomposition is high. |
 
-### Execute (once per task, or once per slice via the batch orchestrators)
+### Execute (once per task)
 
 | Skill            | What it does                                                                                                |
 | ---------------- | ----------------------------------------------------------------------------------------------------------- |
 | `/execute`       | Implements a `size:task` end-to-end on a branch off the parent's integration branch. One commit per cohesive sub-section. Opens a PR with `Closes #<N>`. |
-| `/batch`         | Batch-executes the ready `size:task` children of one parent slice via a worktree-isolated workflow. Infers a dependency DAG, runs independent tasks in parallel and dependent ones in order, squash-merges every code-review-clean task into the slice branch, then opens one slice promotion PR for review. |
-| `/autopilot`     | Takes an already-triaged `size:slice` from decomposition to a batched slice promotion PR, autonomously. Composes `/decompose`, `/audit` (auto-approving routine findings, halting on blocking ones), and `/triage` across the task children, then `/batch`, plus a final sweep of the deferred cleanup findings onto the same slice PR. |
 
 ### Ship (one tier-aware skill)
 

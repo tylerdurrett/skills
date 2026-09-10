@@ -3,8 +3,6 @@ name: triage
 description: Verify the size `/to-spec` picked, lay down per-tier bookkeeping (integration branch declaration, sticky progress comment), apply the next state label, and clear `needs-triage`. Also surfaces what's most actionable across the tracker when invoked without a specific spec. Use after `/to-spec` publishes a spec, when picking up a hand-created spec, or when asking "what should I look at next?"
 ---
 
-*Pipeline agents (running under /autopilot): read [PIPELINE.md](PIPELINE.md) instead of this file — it is the autopilot-facing subset. Keep the two in sync when editing either.*
-
 # Triage
 
 The bookkeeping pass that turns a freshly-published spec into a fully-functional tracker artifact, and a conversational survey of what's most actionable across the queue.
@@ -30,7 +28,7 @@ Read the full spec (body, comments, labels, dates). Parse any prior triage notes
 
 ### 2. Verify size and tier-completeness
 
-Two gating checks. `ready-for-agent` on a slice (and a clear-to-`/decompose` on a feature/initiative) is a promise that the next skill — `/decompose`, `/audit`, `/autopilot` — can actually run the spec. A size check alone does not keep that promise: a correctly-sized spec can still be missing the sections those skills consume. Both checks must pass before you apply the happy-path state.
+Two gating checks. `ready-for-agent` on a slice (and a clear-to-`/decompose` on a feature/initiative) is a promise that the next skill — `/decompose`, `/audit` — can actually run the spec. A size check alone does not keep that promise: a correctly-sized spec can still be missing the sections those skills consume. Both checks must pass before you apply the happy-path state.
 
 **Size.** `/to-spec` should have picked one of `size:initiative` / `size:feature` / `size:slice` / `size:task`. If the size looks right, proceed. If it looks wrong, propose a correction and wait for direction; default toward the larger tier when ambiguous. If the spec has no size label (hand-created without `/to-spec`), recommend one and apply it after confirmation — the only path by which `/triage` originates a size; the default path is verification.
 
@@ -46,7 +44,7 @@ Two gating checks. `ready-for-agent` on a slice (and a clear-to-`/decompose` on 
 If a required section is missing, the spec is **not** happy-path ready — do not clear `needs-triage` into `ready-for-agent` (or into a decompose-ready no-state). Resolve it one of two ways:
 
 - **The alignment context already establishes it** — fill the section inline from that context (show the edit, apply it), then continue to the happy path once the body is complete.
-- **It genuinely needs input or re-alignment** — route to the non-happy path: `needs-info` with triage notes naming exactly which sections are missing, or `needs-grilling` if the gap is deep enough for `/grill-with-docs`. Never stamp `ready-for-agent` over a missing section and let a downstream skill — or an unattended `/autopilot` run — discover it two stages later.
+- **It genuinely needs input or re-alignment** — route to the non-happy path: `needs-info` with triage notes naming exactly which sections are missing, or `needs-grilling` if the gap is deep enough for `/grill-with-docs`. Never stamp `ready-for-agent` over a missing section and let a downstream skill discover it two stages later.
 
 ### 3. Per-tier bookkeeping
 
@@ -71,7 +69,7 @@ Clear `needs-triage` and apply one of the seven canonical state labels (or, for 
 | Size | New state | Next step |
 | ---- | --------- | --------- |
 | `size:task` | `ready-for-agent` | `/execute <N>` |
-| `size:slice` | `ready-for-agent` | `/decompose <N>` (or `/autopilot <N>` to run the whole slice autonomously) |
+| `size:slice` | `ready-for-agent` | `/decompose <N>` |
 | `size:feature` / `size:initiative` | *(no state label)* | `/decompose <N>` |
 
 A spec that fails the step-2 tier-completeness check never reaches this table — it lands in the non-happy path (`needs-info` / `needs-grilling`) until its missing sections are filled.
@@ -128,7 +126,7 @@ Conversational mode. Walk the tracker and present these buckets in order:
 
 3. **Active features and slices (`in-progress`)**: specs that `/decompose` produced children for. Group by parent. Show the auto-rollup (`X of Y children shipped`). On an `in-progress` `size:slice` with open task children, the recommended next action is `/execute <task#>` on the lowest-numbered open task, not further triage on the slice itself.
 
-4. **`ready-for-agent`**: fully specified, waiting for the next move. Only `size:task` and `size:slice` land here (features and initiatives skip `ready-for-agent`). `/execute <N>` for tasks; `/decompose <N>` for slices (or `/autopilot <N>` to run the whole slice autonomously).
+4. **`ready-for-agent`**: fully specified, waiting for the next move. Only `size:task` and `size:slice` land here (features and initiatives skip `ready-for-agent`). `/execute <N>` for tasks; `/decompose <N>` for slices.
 
    Plus **decompose-ready features and initiatives**: `size:feature` / `size:initiative` carrying no state-axis label after `/triage`'s bookkeeping pass. Recommended action: `/decompose <N>`.
 
@@ -142,7 +140,7 @@ Show counts and a one-line summary per spec. After the buckets, **recommend the 
 
 1. An `in-progress` slice with an open task child → `/execute <task#>` on the lowest-numbered open task.
 2. A `ready-for-agent` `size:task` → `/execute <N>`.
-3. A `ready-for-agent` `size:slice` → `/decompose <N>` (or `/autopilot <N>` to run the whole slice autonomously); a `size:feature` / `size:initiative` with no state-axis label → `/decompose <N>`.
+3. A `ready-for-agent` `size:slice` → `/decompose <N>`; a `size:feature` / `size:initiative` with no state-axis label → `/decompose <N>`.
 4. A `needs-triage` spec → `/triage <N>`.
 5. A `needs-grilling` spec → `/grill-with-docs <N>`.
 
