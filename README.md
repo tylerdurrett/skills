@@ -91,6 +91,7 @@ A four-tier flow — initiative → feature → slice → task — that publishe
 | Skill | What it does |
 | --- | --- |
 | [ai-sdk](skills/ai-sdk/) | Build features with the Vercel AI SDK (`generateText`, `streamText`, agents, RAG). |
+| [chrome-devtools](skills/chrome-devtools/) | Browser automation, perf analysis, and debugging via Puppeteer. |
 
 ### Media
 
