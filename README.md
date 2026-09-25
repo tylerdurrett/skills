@@ -18,7 +18,7 @@ mkdir -p .claude && npx skills@latest add tylerdurrett/skills
 
 ## First-time setup
 
-Several of the engineering skills below (`wayfinder`, `triage`, `execute`, `ship`, `audit`, `decompose`, `status`, `recap`, `to-spec`, `defer`, `check`) assume a configured tracker, label vocabulary, integration-branch convention, and a `docs/agents/` directory in your repo. Run `setup-tdog-skills` once after install to scaffold all of that:
+Several of the engineering skills below (`wayfinder`, `triage`, `to-spec`, `decompose`, `check`, `audit`, `ship`) assume a configured tracker, label vocabulary, integration-branch convention, and a `docs/agents/` directory in your repo. Run `setup-tdog-skills` once after install to scaffold all of that:
 
 ```
 /setup-tdog-skills
@@ -57,11 +57,9 @@ A four-tier flow — initiative → feature → slice → task — that publishe
 | [decompose](skills/decompose/) | Break a tier-bearing spec into native sub-issues one tier smaller. |
 | [check](skills/check/) | Fast read-only sanity check on a decomposition before execution burns a session on a flawed plan. |
 | [audit](skills/audit/) | Heavier multi-agent (Claude + Codex) version of `/check`, with writes back to the tracker on approval. |
-| [execute](skills/execute/) | Implement a `size:task` end-to-end on a branch off the parent's integration branch and open the PR. |
+| [easy-auto](skills/easy-auto/) | Orchestrate a `size:task` or `size:slice` end-to-end with sub-agents (plan, review, parallel worktree implementation, code review) and open one PR. |
+| [auto-feature](skills/auto-feature/) | Orchestrate a `size:feature` by delegating each slice to `/easy-auto`. |
 | [ship](skills/ship/) | Tier-aware close-out: squash-merge tasks, promote slices/features upward, refuse initiatives (those close manually). |
-| [defer](skills/defer/) | Capture out-of-scope cleanup findings as `cleanup`-labeled issues so they don't pollute the current PR. |
-| [status](skills/status/) | Read-only walk of the tracker that recommends one next step. |
-| [recap](skills/recap/) | Paste-ready stakeholder recap of recent activity (today / week / upcoming). |
 
 ### Project docs
 
@@ -93,7 +91,12 @@ A four-tier flow — initiative → feature → slice → task — that publishe
 | Skill | What it does |
 | --- | --- |
 | [ai-sdk](skills/ai-sdk/) | Build features with the Vercel AI SDK (`generateText`, `streamText`, agents, RAG). |
-| [chrome-devtools](skills/chrome-devtools/) | Browser automation, perf analysis, and debugging via Puppeteer. |
+
+### Media
+
+| Skill | What it does |
+| --- | --- |
+| [explainer-video](skills/explainer-video/) | Make a 30-60s hand-drawn collage-style explainer video with TTS narration, rendered as a 4K mp4. |
 
 ## Credit
 

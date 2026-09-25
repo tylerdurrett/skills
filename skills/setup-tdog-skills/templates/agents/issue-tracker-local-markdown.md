@@ -4,7 +4,7 @@ Specs (initiatives, features, slices, tasks) for this repo live as markdown file
 
 For the canonical hierarchy and label vocabulary, see [triage-labels.md](triage-labels.md). At a glance: initiative → feature → slice → task → PR. Every file is a "spec" of some size; size determines which decomposition step applies next.
 
-> **Heads-up.** The workflow skills (`/triage`, `/decompose`, `/execute`, `/ship`, `/defer`, `/status`, etc.) are currently written against the GitHub tracker — they shell out to `gh issue *`. Picking local-markdown means the spec files exist and this doc describes the shape, but those skills will refuse or no-op until they grow a local-markdown code path. Treat this variant as the file convention; expect to patch the consumer skills before they work end-to-end. The convention below is what they will read once patched.
+> **Heads-up.** The workflow skills (`/triage`, `/decompose`, `/ship`, etc.) are currently written against the GitHub tracker — they shell out to `gh issue *`. Picking local-markdown means the spec files exist and this doc describes the shape, but those skills will refuse or no-op until they grow a local-markdown code path. Treat this variant as the file convention; expect to patch the consumer skills before they work end-to-end. The convention below is what they will read once patched.
 
 ## File layout
 
@@ -46,7 +46,7 @@ integration-branch:                      # feature/issue-<N>-<slug> or slice/iss
 …
 ```
 
-The frontmatter keys carry the same load as the label axes on GitHub: `size`, `state`, `lifecycle`, `category`. Empty values mean "not applicable yet" (e.g. fresh task specs have no `lifecycle` until `/execute` opens its PR).
+The frontmatter keys carry the same load as the label axes on GitHub: `size`, `state`, `lifecycle`, `category`. Empty values mean "not applicable yet" (e.g. fresh task specs have no `lifecycle` until their PR opens).
 
 ## Conventions
 
@@ -69,8 +69,8 @@ Read the file at `.scratch/<NNNN>-*.md`. Globbing the number is enough; the slug
 
 The `part-of:` frontmatter field is the parent link. Each spec has at most one parent. Setting `part-of: 0042` makes this spec a child of `.scratch/0042-*.md`. To find a spec's children, grep the directory: `rg -l "^part-of: 0042$" .scratch/`.
 
-There is no separate "sub-issue attach" call — setting the frontmatter is the attach. The auto-rollup that GitHub's sub-issue panel renders is a `rg`-driven count when needed (see `/status`).
+There is no separate "sub-issue attach" call — setting the frontmatter is the attach. The auto-rollup that GitHub's sub-issue panel renders is a `rg`-driven count when needed.
 
 ## When there is no parent
 
-A top-level spec (a freeform initiative, or an orphan ad-hoc slice/task) sets `part-of:` to empty. This is the documented no-parent path; downstream walks (`/execute`'s parent-chain walk per [ADR-0001](../adr/0001-issues-branch-from-parent-integration-branch.md)) terminate at `main` as the fallback base branch.
+A top-level spec (a freeform initiative, or an orphan ad-hoc slice/task) sets `part-of:` to empty. This is the documented no-parent path; downstream walks (the parent-chain walk per [ADR-0001](../adr/0001-issues-branch-from-parent-integration-branch.md)) terminate at `main` as the fallback base branch.

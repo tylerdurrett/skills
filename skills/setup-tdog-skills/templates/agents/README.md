@@ -60,7 +60,7 @@ The same five-step loop runs at every tier from initiative down to slice.
                                │
                     ┌──────────▼───────────┐
                     │ Final, per task:     │
-                    │  /execute            │   opens the PR
+                    │  /easy-auto          │   opens the PR
                     │  /ship               │   merges it
                     └──────────┬───────────┘
                                │ (recurse upward)
@@ -101,11 +101,12 @@ The full skill set, organized by phase of the loop.
 | `/check`     | Single-agent sanity check on a decomposition. Tier-aware: initiative input runs Outcome / Definition-of-done coverage; feature input runs user-story coverage; slice input runs AC coverage + codebase grounding + per-task sizing + sequencing; task input runs codebase grounding + AC sanity-check, with lightweight sibling-context checks when the task has a parent. Read-only, fast, conversational. |
 | `/audit`     | Multi-agent (Claude + Codex) version of `/check`. Synthesizes findings with provenance, gates on user approval, writes back additive body edits + a synthesis comment. Reach for it when the cost of a flawed decomposition is high. |
 
-### Execute (once per task)
+### Execute (once per task or slice, or once per feature via `/auto-feature`)
 
 | Skill            | What it does                                                                                                |
 | ---------------- | ----------------------------------------------------------------------------------------------------------- |
-| `/execute`       | Implements a `size:task` end-to-end on a branch off the parent's integration branch. One commit per cohesive sub-section. Opens a PR with `Closes #<N>`. |
+| `/easy-auto`     | Orchestrates a `size:task` or `size:slice` end-to-end with sub-agents: plans (a slice is decomposed into a task DAG in-session, without separate task issues or PRs), reviews the plan, implements in parallel worktrees, reviews each block independently, then opens one PR for review. |
+| `/auto-feature`  | Orchestrates a `size:feature` (or a named list of slices) by delegating each slice to `/easy-auto`. User-invoked only. |
 
 ### Ship (one tier-aware skill)
 
@@ -119,8 +120,6 @@ The user-visible-vs-intermediate signal lives in the outcome line of the end-of-
 
 | Skill         | What it does                                                                                                 |
 | ------------- | ------------------------------------------------------------------------------------------------------------ |
-| `/status`     | Read-only survey of where work stands. Walks the tracker, picks one recommended next-step skill. The "where am I" answer. |
-| `/defer`      | Captures cleanup / dedup / refactor findings as `cleanup`-labeled issues so they don't pollute the current PR. Companion to `/simplify`. |
 | `/dag`        | Writes (or refreshes) a Mermaid dependency DAG of an issue's direct sub-issues into the issue body. Tier-agnostic. Color-codes each node by status (done / in progress / not started). Idempotent. |
 
 ## The labels
@@ -142,9 +141,9 @@ How code flows up the hierarchy, mirroring how the spec hierarchy flows down.
 
 ```
 main
- └── feature/issue-<F>-<slug>             ← created lazily by /execute on first task
+ └── feature/issue-<F>-<slug>             ← created lazily on first task
       └── slice/issue-<S>-<slug>          ← created by /decompose when slice is multi-task
-           └── <type>/issue-<T>-<slug>    ← task branches; opened by /execute
+           └── <type>/issue-<T>-<slug>    ← task branches
                                             <type> is feat/fix/refactor/chore
 ```
 
@@ -154,7 +153,7 @@ The recursion is captured in [ADR-0001](../adr/0001-issues-branch-from-parent-in
 
 ## End-of-run output
 
-Every workflow skill that produces a durable artifact ends with the same three-block template (outcome, links, next step). Skills whose output IS the report (`/status`, `/triage` in conversational mode, `/grill-with-docs`, `/check`, `/audit`) are explicit exceptions. Full detail in [output-format.md](output-format.md).
+Every workflow skill that produces a durable artifact ends with the same three-block template (outcome, links, next step). Skills whose output IS the report (`/triage` in conversational mode, `/grill-with-docs`, `/check`, `/audit`) are explicit exceptions. Full detail in [output-format.md](output-format.md).
 
 ## Where to start
 
@@ -162,7 +161,7 @@ Every workflow skill that produces a durable artifact ends with the same three-b
 - **You have an idea brewing**: run `/grill-with-docs` first.
 - **You have an alignment session ready to capture**: run `/to-spec`.
 - **You have a freshly captured spec on the tracker**: run `/triage <N>` to verify size, seed bookkeeping, and route it.
-- **You're not sure where you are**: run `/status`.
+- **You're not sure where you are**: run `/triage` with no arguments.
 
 ## Why this shape
 

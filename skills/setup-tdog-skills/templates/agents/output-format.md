@@ -62,7 +62,6 @@ If the skill genuinely terminates the chain (no follow-up applies), omit the blo
 
 These skills' entire output IS the report. They don't follow the three-block shape:
 
-- **`/status`**: its own multi-section warm-prose report. Reads like a status update for a stakeholder; voice rules below still apply.
 - **`/triage`** in conversational mode (e.g. "show what needs attention"): prose-driven survey, ends with a recommendation embedded in the body.
 - **`/grill-with-docs`**: interview format, ends when control returns to the user. No canonical wrap-up line.
 - **`/check`**: terminal `## Findings` block is the structured artifact `/audit` parses. The conversational lead-up is the report; the Findings block is the contract.
@@ -125,7 +124,7 @@ Shipped task #143 via PR #144. The export-pipeline slice now has 3 of 4 tasks la
 - on branch: slice/issue-83-export-pipeline
 - task issue closed: #143
 
-> Next step: `/execute #145`. Last open task on the same slice.
+> Next step: `/easy-auto #145`. Last open task on the same slice.
 ```
 
 ### A `/ship` run at the feature tier
@@ -141,21 +140,6 @@ Stop.
 ```
 
 The outcome line carries the moment-of-truth: "shipped to production" for feature-tier ships, "integrated onto the <feature> branch (intermediate; not user-visible yet)" for slice-tier ships.
-
-### A `/defer` run with two filed specs
-
-```
-Filed two cleanup specs.
-
-- https://github.com/<owner>/<repo>/issues/194 (Centralize Postgres helpers in the shared package)
-- https://github.com/<owner>/<repo>/issues/195 (Consolidate storage-provider helpers)
-
-Stop.
-```
-
-### A `/status` run
-
-Multi-section warm-prose report. The lead paragraph names active features and initiatives by title; "What to do next" gives one recommendation. No three-block template.
 
 ## Anti-patterns
 

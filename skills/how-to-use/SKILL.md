@@ -7,7 +7,7 @@ description: Show the project's user manual: how the workflow flows, what skills
 
 Print the user manual for the project's skill ecosystem.
 
-This skill is **static**: the output is the same every invocation. It does not survey local state, fetch from the issue tracker, or read the working tree. The job here is documentation; `/status` is the skill that reads state. For the longer-form canonical version of this overview see [docs/agents/README.md](../../../docs/agents/README.md); this skill prints the inline-readable digest.
+This skill is **static**: the output is the same every invocation. It does not survey local state, fetch from the issue tracker, or read the working tree. The job here is documentation; `/triage` with no arguments is the skill that reads state. For the longer-form canonical version of this overview see [docs/agents/README.md](../../../docs/agents/README.md); this skill prints the inline-readable digest.
 
 ## Hard rules
 
@@ -79,8 +79,9 @@ this hierarchy.
 
 **Per task**, once a leaf is ready:
 
-6. **`/execute`** implements the task end-to-end on a branch off its
-   parent's integration branch, then opens a PR with `Closes #<N>`.
+6. **`/easy-auto`** implements the task end-to-end on a branch off its
+   parent's integration branch, then opens a PR for review. It can also
+   take a whole slice in one run.
 7. **`/ship`** lands the PR, closes the task, prunes the local branch.
 
 **Per parent**, once all its children are closed:
@@ -121,20 +122,18 @@ and decision tickets separately; they are not a fifth lifecycle axis.
 Code flows up the hierarchy the same way the spec hierarchy flows down:
 
     main
-     └── feature/issue-<F>-<slug>           created lazily by /execute on first task
+     └── feature/issue-<F>-<slug>           created lazily on first task
           └── slice/issue-<S>-<slug>        created when the slice is multi-task
-               └── <type>/issue-<T>-<slug>  task branch; opened by /execute
+               └── <type>/issue-<T>-<slug>  task branch
 
 Each task's PR targets its parent's integration branch. `/ship` walks
 promotions up the tree.
 
 ## A few helpers
 
-- **`/status`** reads the tracker and your local working tree, then
-  recommends the single next thing to do. When you don't know where you
-  are, run this first.
-- **`/defer`** captures cleanup or refactor findings as `cleanup`-labeled
-  specs so they don't pollute the PR you're currently shipping.
+- **`/triage`** with no arguments surveys the tracker and recommends
+  the single next thing to do. When you don't know where you are, run
+  this first.
 - **`/diagnose`** is a disciplined loop for tracking down a bug.
 - **`/tdd`** is a red-green-refactor build loop for new code.
 - **`/improve-codebase-architecture`** finds places the code wants to
@@ -142,10 +141,10 @@ promotions up the tree.
 
 ## Where to start right now
 
-- **You have work in progress:** run **`/status`**.
+- **You have work in progress:** run **`/triage`** with no arguments.
 - **You have a foggy, multi-session idea:** run **`/wayfinder`**.
 - **You have an idea brewing:** run **`/grill-with-docs`**.
-- **You're not sure:** run **`/status`**.
+- **You're not sure:** run **`/triage`** with no arguments.
 ```
 
 ## After printing

@@ -16,7 +16,7 @@ Every lifecycle issue on the tracker is a **spec** (the generic name for a captu
 | Initiative | A directed effort toward an outcome. Groups multiple features. Closes manually.               |
 | Feature    | A meaningful unit of user-facing value. Decomposes into slices. Has an integration branch.    |
 | Slice      | A vertical cut of a feature, demoable end-to-end. Always decomposes into multiple tasks.      |
-| Task       | One PR's worth of work. Ships via `/execute` + `/ship`.                                 |
+| Task       | One PR's worth of work. Ships via `/easy-auto` + `/ship`.                                     |
 
 A slice can sit under a feature (typical) or be an orphan (ad-hoc multi-task work, not part of any feature). Same operational behavior either way.
 
@@ -34,7 +34,7 @@ Indicates what tier the spec lives at. Assigned at triage; absence means triage 
 
 A spec sized as `size:slice` always contains multiple tasks; a spec sized as `size:feature` always contains multiple slices; a spec sized as `size:initiative` always contains multiple features. If a candidate decomposition would yield exactly one child, the parent should have been sized one tier smaller. Right-sizing is iterative.
 
-`size:initiative` and `size:feature` skip `ready-for-agent` direct execution: they decompose, they don't ship via `/execute`. `size:slice` decomposes but its decomposition can be agent-driven (`/decompose` produces task children). Only `size:task` passes through `ready-for-agent` to direct implementation via `/execute`.
+`size:initiative` and `size:feature` skip `ready-for-agent` direct execution: they decompose, they don't ship as a single PR. `size:slice` decomposes but its decomposition can be agent-driven (`/decompose` produces task children). Only `size:task` passes through `ready-for-agent` to direct implementation (e.g. via `/easy-auto`).
 
 ## State axis
 
@@ -60,20 +60,20 @@ The seven labels are mutually exclusive. A spec carries exactly one until it tra
 
 ## Lifecycle axis
 
-Tracks active work. Set automatically by lifecycle skills; do not edit manually unless cleaning up drift surfaced by `/triage` or `/status`.
+Tracks active work. Set automatically by lifecycle skills; do not edit manually unless cleaning up drift surfaced by `/triage`.
 
 | Label         | Meaning                                                                                              |
 | ------------- | ---------------------------------------------------------------------------------------------------- |
-| `in-progress` | Active work has begun. On `size:initiative` / `size:feature` / `size:slice`: `/decompose` has produced children and PRs are landing. On `size:task`: `/execute` has opened a PR. |
+| `in-progress` | Active work has begun. On `size:initiative` / `size:feature` / `size:slice`: `/decompose` has produced children and PRs are landing. On `size:task`: its implementation PR is open. |
 
 Transitions:
 
 - **`size:initiative`**: `(no state)` → `in-progress` (when first child feature is materialized) → closed (manual; initiatives close on `Definition of done` met, not on all-children-closed).
 - **`size:feature`**: `(no state)` → `in-progress` (when `/decompose` runs) → closed (via `/ship` once all slices have shipped).
 - **`size:slice`**: `ready-for-agent` → `in-progress` (when `/decompose` runs) → closed (via `/ship` once all tasks have shipped, or via `/ship` defensive close if absorbed elsewhere).
-- **`size:task`**: `ready-for-agent` → `in-progress` (when `/execute` opens a PR) → closed (via `/ship`).
+- **`size:task`**: `ready-for-agent` → `in-progress` (when its PR opens) → closed (via `/ship`).
 
-The lifecycle label and the state-axis labels are mutually exclusive: when `in-progress` goes on, the previous state label comes off in the same `gh issue edit` call. A spec carrying both `in-progress` and a state label is drift; `/triage` and `/status` will surface it.
+The lifecycle label and the state-axis labels are mutually exclusive: when `in-progress` goes on, the previous state label comes off in the same `gh issue edit` call. A spec carrying both `in-progress` and a state label is drift; `/triage` will surface it.
 
 ## Category axis
 
@@ -83,7 +83,7 @@ Optional labels that describe what kind of work a spec represents, orthogonal to
 | ------------- | --------------------------------------------------------------------------------------------- |
 | `bug`         | Something is broken. Typically applied to `size:task` and `size:slice` specs.                 |
 | `enhancement` | New feature or improvement. Typically applied at any size.                                    |
-| `cleanup`     | Refactor / dedup / housekeeping work surfaced during other tasks. Created by `/defer`. |
+| `cleanup`     | Refactor / dedup / housekeeping work surfaced during other tasks. |
 
 `cleanup` specs arrive as `cleanup` + `needs-triage`: they enter triage like any other spec, the label just signals non-urgent housekeeping rather than user-facing change. `/triage cleanup` is a useful periodic sweep to keep the queue from rotting.
 

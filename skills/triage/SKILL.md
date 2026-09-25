@@ -28,7 +28,7 @@ Read the full spec (body, comments, labels, dates). Parse any prior triage notes
 
 ### 2. Verify size and tier-completeness
 
-Two gating checks. `ready-for-agent` on a slice (and a clear-to-`/decompose` on a feature/initiative) is a promise that the next skill — `/decompose`, `/audit` — can actually run the spec. A size check alone does not keep that promise: a correctly-sized spec can still be missing the sections those skills consume. Both checks must pass before you apply the happy-path state.
+Two gating checks. `ready-for-agent` on a slice (and a clear-to-`/decompose` on a feature/initiative) is a promise that the next skill — `/decompose`, `/audit`, `/easy-auto` — can actually run the spec. A size check alone does not keep that promise: a correctly-sized spec can still be missing the sections those skills consume. Both checks must pass before you apply the happy-path state.
 
 **Size.** `/to-spec` should have picked one of `size:initiative` / `size:feature` / `size:slice` / `size:task`. If the size looks right, proceed. If it looks wrong, propose a correction and wait for direction; default toward the larger tier when ambiguous. If the spec has no size label (hand-created without `/to-spec`), recommend one and apply it after confirmation — the only path by which `/triage` originates a size; the default path is verification.
 
@@ -39,18 +39,18 @@ Two gating checks. `ready-for-agent` on a slice (and a clear-to-`/decompose` on 
 | `size:initiative` | `## Definition of done`, `## Out of scope` — `/decompose` → features |
 | `size:feature` | `## Problem Statement`, `## Solution`, `## User Stories` — `/decompose` → slices |
 | `size:slice` | `## Scope`, `## Acceptance criteria`, `## Out of scope` — `/decompose` → tasks; **`/audit` refuses outright without `## Acceptance criteria`** |
-| `size:task` | `## Scope`, `## Acceptance criteria` — `/execute`, `/verify` |
+| `size:task` | `## Scope`, `## Acceptance criteria` — `/easy-auto`, `/verify` |
 
 If a required section is missing, the spec is **not** happy-path ready — do not clear `needs-triage` into `ready-for-agent` (or into a decompose-ready no-state). Resolve it one of two ways:
 
 - **The alignment context already establishes it** — fill the section inline from that context (show the edit, apply it), then continue to the happy path once the body is complete.
-- **It genuinely needs input or re-alignment** — route to the non-happy path: `needs-info` with triage notes naming exactly which sections are missing, or `needs-grilling` if the gap is deep enough for `/grill-with-docs`. Never stamp `ready-for-agent` over a missing section and let a downstream skill discover it two stages later.
+- **It genuinely needs input or re-alignment** — route to the non-happy path: `needs-info` with triage notes naming exactly which sections are missing, or `needs-grilling` if the gap is deep enough for `/grill-with-docs`. Never stamp `ready-for-agent` over a missing section and let a downstream skill — or an unattended `/easy-auto` run — discover it two stages later.
 
 ### 3. Per-tier bookkeeping
 
 Conditional on the (final) size:
 
-- **`size:feature` or `size:slice`**: declare the integration branch. Compute the branch name (`feature/issue-<N>-<slug>` for features, `slice/issue-<N>-<slug>` for slices) and prepend `**Integration Branch:** <branch>` to the spec body, just below the `**Part of:** #<P>` line if present. Body edit via `gh issue edit <N> --body-file -`. The branch itself is created lazily by `/execute` on first use per [ADR-0001](../../../docs/adr/0001-issues-branch-from-parent-integration-branch.md) (or the slot it landed in if `0001` was already taken); `/triage` only declares the name.
+- **`size:feature` or `size:slice`**: declare the integration branch. Compute the branch name (`feature/issue-<N>-<slug>` for features, `slice/issue-<N>-<slug>` for slices) and prepend `**Integration Branch:** <branch>` to the spec body, just below the `**Part of:** #<P>` line if present. Body edit via `gh issue edit <N> --body-file -`. The branch itself is created lazily on first use per [ADR-0001](../../../docs/adr/0001-issues-branch-from-parent-integration-branch.md) (or the slot it landed in if `0001` was already taken); `/triage` only declares the name.
 
 - **`size:initiative`**: seed the sticky progress comment. Post a comment in the exact shape documented at [lifecycle-initiative.md §The marker](../../../docs/agents/lifecycle-initiative.md#the---progress-commentinitiative---marker) (`<!-- progress-comment:initiative -->` marker on the first line, `## Child features` heading, italic placeholder). `/to-spec` (initiative as parent) and `/decompose` replace the placeholder with `- [ ] #<F> — <title>` rows as features attach.
 
@@ -68,8 +68,8 @@ Clear `needs-triage` and apply one of the seven canonical state labels (or, for 
 
 | Size | New state | Next step |
 | ---- | --------- | --------- |
-| `size:task` | `ready-for-agent` | `/execute <N>` |
-| `size:slice` | `ready-for-agent` | `/decompose <N>` |
+| `size:task` | `ready-for-agent` | `/easy-auto <N>` |
+| `size:slice` | `ready-for-agent` | `/decompose <N>` (or `/easy-auto <N>` to run the whole slice autonomously) |
 | `size:feature` / `size:initiative` | *(no state label)* | `/decompose <N>` |
 
 A spec that fails the step-2 tier-completeness check never reaches this table — it lands in the non-happy path (`needs-info` / `needs-grilling`) until its missing sections are filled.
@@ -124,9 +124,9 @@ Conversational mode. Walk the tracker and present these buckets in order:
 
 2. **`needs-grilling`**: synthesized children awaiting alignment, oldest first. Group by parent. Recommended action: `/grill-with-docs <N>`, or `/triage <N>` if the maintainer wants to skip grilling.
 
-3. **Active features and slices (`in-progress`)**: specs that `/decompose` produced children for. Group by parent. Show the auto-rollup (`X of Y children shipped`). On an `in-progress` `size:slice` with open task children, the recommended next action is `/execute <task#>` on the lowest-numbered open task, not further triage on the slice itself.
+3. **Active features and slices (`in-progress`)**: specs that `/decompose` produced children for. Group by parent. Show the auto-rollup (`X of Y children shipped`). On an `in-progress` `size:slice` with open task children, the recommended next action is `/easy-auto <task#>` on the lowest-numbered open task, not further triage on the slice itself.
 
-4. **`ready-for-agent`**: fully specified, waiting for the next move. Only `size:task` and `size:slice` land here (features and initiatives skip `ready-for-agent`). `/execute <N>` for tasks; `/decompose <N>` for slices.
+4. **`ready-for-agent`**: fully specified, waiting for the next move. Only `size:task` and `size:slice` land here (features and initiatives skip `ready-for-agent`). `/easy-auto <N>` for tasks; `/decompose <N>` for slices (or `/easy-auto <N>` to run the whole slice autonomously).
 
    Plus **decompose-ready features and initiatives**: `size:feature` / `size:initiative` carrying no state-axis label after `/triage`'s bookkeeping pass. Recommended action: `/decompose <N>`.
 
@@ -138,9 +138,9 @@ Conversational mode. Walk the tracker and present these buckets in order:
 
 Show counts and a one-line summary per spec. After the buckets, **recommend the concrete next action**: name one spec and one skill. Decision priority (highest first):
 
-1. An `in-progress` slice with an open task child → `/execute <task#>` on the lowest-numbered open task.
-2. A `ready-for-agent` `size:task` → `/execute <N>`.
-3. A `ready-for-agent` `size:slice` → `/decompose <N>`; a `size:feature` / `size:initiative` with no state-axis label → `/decompose <N>`.
+1. An `in-progress` slice with an open task child → `/easy-auto <task#>` on the lowest-numbered open task.
+2. A `ready-for-agent` `size:task` → `/easy-auto <N>`.
+3. A `ready-for-agent` `size:slice` → `/decompose <N>` (or `/easy-auto <N>` to run the whole slice autonomously); a `size:feature` / `size:initiative` with no state-axis label → `/decompose <N>`.
 4. A `needs-triage` spec → `/triage <N>`.
 5. A `needs-grilling` spec → `/grill-with-docs <N>`.
 
@@ -148,7 +148,7 @@ Parked specs never feed the priority chain. The natural next child under a paren
 
 ## Quick state override
 
-If the maintainer says "move #42 to ready-for-agent", trust them and apply the label directly after confirming what you're about to do. Skip grilling and the bookkeeping checks. If no size label is set, ask which to apply; `/execute` and `/decompose` refuse to run without one.
+If the maintainer says "move #42 to ready-for-agent", trust them and apply the label directly after confirming what you're about to do. Skip grilling and the bookkeeping checks. If no size label is set, ask which to apply; `/decompose` refuses to run without one.
 
 ## Needs-info template
 

@@ -6,8 +6,8 @@
 // `class <ids> done|inProgress|notStarted;` assignment lines. classDefs, nodes, edges, the
 // legend, and everything outside the DAG section are preserved byte-for-byte.
 //
-// Why a script (not the agent flow): /ship refreshes colors after every close/merge, and
-// sibling runs can overlap. Re-running the full agent flow each time would (a) cost an agent per
+// Why a script (not the agent flow): /ship refreshes colors on every close/merge, sometimes from
+// several sessions at once. Re-running the full agent flow each time would (a) cost an agent per
 // refresh and (b) let edge inference drift run-to-run, making the chart flicker. Recoloring is
 // pure mechanism, so it lives in code: fast, churn-free, and safe to fire on every transition.
 //

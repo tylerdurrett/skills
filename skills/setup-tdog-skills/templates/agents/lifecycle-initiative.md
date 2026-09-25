@@ -123,6 +123,5 @@ This is the same discipline the feature ecosystem applies one level down (`/ship
 | `/triage`          | Verifies `size:initiative` (may change it), seeds the sticky progress comment, clears `needs-triage`, applies the next state label, may apply `needs-grilling` when the spec was synthesized rather than grilled. Does not recommend `ready-for-agent`. |
 | `/decompose <I>`   | Materializes child features under the initiative. Removes matching candidate bullets from the body, adds rows to the sticky comment, flips to `in-progress` on first attach. |
 | `/ship` (feature)  | Ticks the matching `- [ ] #<F>` row in the parent initiative's sticky comment when a child feature closes.  |
-| `/status`          | Surfaces active initiatives (`size:initiative` + `in-progress`) by name in the lead paragraph alongside active features. |
 
 This doc tracks the initiative-level conventions only. The skill-side details (call shapes, idempotency, failure semantics) live in each skill's `SKILL.md`.

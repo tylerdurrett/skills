@@ -15,7 +15,7 @@ For label vocabulary see [docs/agents/triage-labels.md](../../../docs/agents/tri
 
 ## When to use
 
-- After `/decompose` publishes a spec's children, before kicking off `/execute` against any task. The `/decompose` end-of-run line recommends running this skill at exactly that moment.
+- After `/decompose` publishes a spec's children, before kicking off `/easy-auto` against any task. The `/decompose` end-of-run line recommends running this skill at exactly that moment.
 - After the maintainer hand-edits a spec body or a child body in a way that might have shifted coverage or scope.
 - On a single `size:task` when you want a narrow codebase-grounding pass before execution.
 
@@ -243,7 +243,7 @@ Audited <tier> #<N>; <N> findings surfaced (or "clean bill").
 The outcome line names the audited tier in plain English (`initiative`, `feature`, `slice`, `task`). The next-step line is one of:
 
 - `/decompose <N>` if the audit was clean and the next loop iteration is decomposition into children. (Initiative or feature, no findings.)
-- `/execute <N>` if a task audit was clean and the task is ready to ship.
+- `/easy-auto <N>` if a task audit was clean and the task is ready to implement.
 - If findings exist, omit the skill name and write `> Next step: resolve the findings above before continuing.` so the maintainer resolves them before the loop advances.
 
 The `## Findings` block must sit between the outcome and next-step lines so orchestrators parsing the bottom-most `## Findings` heading reach it deterministically.

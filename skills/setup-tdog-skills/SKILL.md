@@ -1,6 +1,6 @@
 ---
 name: setup-tdog-skills
-description: Scaffold the per-repo configuration the tdog engineering skills assume — an `## Agent skills` block in CLAUDE.md/AGENTS.md, the canonical docs under `docs/agents/`, and the integration-branch ADR under `docs/adr/`. Run before first use of `/wayfinder`, `/triage`, `/to-spec`, `/decompose`, `/check`, `/audit`, `/execute`, `/ship`, `/status`, `/recap`, `/defer`, or `/grill-with-docs` — or any time those skills appear to be missing context about the issue tracker, the label vocabulary, the integration-branch convention, or the domain doc layout.
+description: Scaffold the per-repo configuration the tdog engineering skills assume — an `## Agent skills` block in CLAUDE.md/AGENTS.md, the canonical docs under `docs/agents/`, and the integration-branch ADR under `docs/adr/`. Run before first use of `/wayfinder`, `/triage`, `/to-spec`, `/decompose`, `/check`, `/audit`, `/ship`, or `/grill-with-docs` — or any time those skills appear to be missing context about the issue tracker, the label vocabulary, the integration-branch convention, or the domain doc layout.
 disable-model-invocation: true
 ---
 
@@ -9,10 +9,10 @@ disable-model-invocation: true
 Scaffold the per-repo configuration the tdog engineering skill set assumes:
 
 - **Issue tracker** — where specs (initiatives, features, slices, tasks) live. tdog currently supports GitHub only; the workflow skills shell out to `gh issue *`. Other backends (local markdown, Linear, Jira, GitLab) are not supported today and would require adapter work in the consumer skills first.
-- **Triage labels** — the strings used for the canonical state vocabulary, including the `cleanup` category used by `/defer`.
+- **Triage labels** — the strings used for the canonical state vocabulary, including the `cleanup` category for out-of-scope housekeeping.
 - **Domain docs** — where `CONTEXT.md` and ADRs live, and the consumer rules for reading them.
 
-Plus four fixed-shape documents that every workflow skill grep's against (not user-configurable), and the integration-branch ADR (referenced by `/execute` and `/ship`; numbered 0001 by default, bumped to the next free slot if the repo already has ADRs occupying it).
+Plus four fixed-shape documents that every workflow skill grep's against (not user-configurable), and the integration-branch ADR (referenced by `/triage`, `/decompose`, and `/ship`; numbered 0001 by default, bumped to the next free slot if the repo already has ADRs occupying it).
 
 This is a prompt-driven skill, not a deterministic script. Explore, present what you found, confirm with the user, then write. Assume the user does not know what these terms mean — each section is preceded by a short explainer.
 
@@ -55,7 +55,7 @@ Each section starts with a short explainer (what it is, why these skills need it
 
 #### Section A — Triage label vocabulary
 
-> **Explainer.** When `/triage` processes a spec, it moves it through a state machine — needs evaluation, needs grilling, needs info, ready for an AFK agent, ready for a human, deferred, won't fix — and assigns one of those states as a label. It also recognises a `cleanup` category label that `/defer` files when out-of-scope housekeeping work surfaces during another task. To do its job, `/triage` needs the label *strings* to match what's actually in your tracker. If your repo already uses different label names (e.g. `bug:triage` instead of `needs-triage`), map them here so the skill applies the right ones instead of creating duplicates.
+> **Explainer.** When `/triage` processes a spec, it moves it through a state machine — needs evaluation, needs grilling, needs info, ready for an AFK agent, ready for a human, deferred, won't fix — and assigns one of those states as a label. It also recognises a `cleanup` category label for out-of-scope housekeeping work that surfaces during another task. To do its job, `/triage` needs the label *strings* to match what's actually in your tracker. If your repo already uses different label names (e.g. `bug:triage` instead of `needs-triage`), map them here so the skill applies the right ones instead of creating duplicates.
 
 The seven canonical state roles:
 
@@ -71,7 +71,7 @@ The seven canonical state roles:
 
 Plus the lifecycle label `in-progress` and the category labels `bug`, `enhancement`, **`cleanup`**.
 
-Default: each role's string equals its name. Ask the user only whether they want to override any of those strings. If they do, capture the mapping in `docs/agents/triage-labels.md`'s "What replaced what" table so `/triage` and `/status` recognise both old and new during transition.
+Default: each role's string equals its name. Ask the user only whether they want to override any of those strings. If they do, capture the mapping in `docs/agents/triage-labels.md`'s "What replaced what" table so `/triage` recognises both old and new during transition.
 
 > **Don't ask about the size tier or Wayfinder labels.** `size:initiative`, `size:feature`, `size:slice`, `size:task`, `wayfinder:map`, `wayfinder:research`, `wayfinder:prototype`, `wayfinder:grilling`, and `wayfinder:task` are **fixed strings** the workflow skills grep for. Renaming them would mean editing every skill that references them, which is out of scope for the setup. Document them as immutable in the template and move on.
 
@@ -104,7 +104,7 @@ gh label create wayfinder:task      --color CFD3D7 --description "Wayfinder prer
 
 #### Section B — Domain docs
 
-> **Explainer.** Skills that explore the codebase (`/grill-with-docs`, `/execute`, `/decompose`, `/improve-codebase-architecture`, `/diagnose`, `/tdd`) read `CONTEXT.md` for the project's domain language and `docs/adr/` for past architectural decisions. They need to know whether the repo has one global context or multiple (e.g. a monorepo with per-package contexts) so they look in the right place.
+> **Explainer.** Skills that explore the codebase (`/grill-with-docs`, `/decompose`, `/improve-codebase-architecture`, `/diagnose`, `/tdd`) read `CONTEXT.md` for the project's domain language and `docs/adr/` for past architectural decisions. They need to know whether the repo has one global context or multiple (e.g. a monorepo with per-package contexts) so they look in the right place.
 
 Confirm the layout:
 
@@ -120,7 +120,7 @@ These come along for free, regardless of the answers above:
 - **`docs/agents/README.md`** — the system overview every workflow skill references. Fixed convention.
 - **`docs/agents/output-format.md`** — the end-of-run output template every workflow skill grep's against. Fixed convention.
 - **`docs/agents/lifecycle-initiative.md`** — initiative-tier rules (`<!-- progress-comment:initiative -->` marker, manual closure, two-phase intent → materialization). Fixed convention.
-- **`docs/adr/NNNN-issues-branch-from-parent-integration-branch.md`** — referenced by `/execute` and `/ship`. Drops in from the template at `templates/adr/0001-*.md`. Default slot is `0001`; if `docs/adr/` already has ADRs, scan for the highest existing number and use the next free slot instead. Either way, rewrite the file's header `# ADR-NNNN — …` to match the chosen number, and update the references in the freshly-written `docs/agents/README.md` (the link in the "Integration branches" section) and in [issue-tracker-local-markdown.md](./templates/agents/issue-tracker-local-markdown.md) before writing. **Do not** patch references inside the consumer skills under `skills/` — those live in the published library, not the user's repo.
+- **`docs/adr/NNNN-issues-branch-from-parent-integration-branch.md`** — referenced by `/triage`, `/decompose`, and `/ship`. Drops in from the template at `templates/adr/0001-*.md`. Default slot is `0001`; if `docs/adr/` already has ADRs, scan for the highest existing number and use the next free slot instead. Either way, rewrite the file's header `# ADR-NNNN — …` to match the chosen number, and update the references in the freshly-written `docs/agents/README.md` (the link in the "Integration branches" section) and in [issue-tracker-local-markdown.md](./templates/agents/issue-tracker-local-markdown.md) before writing. **Do not** patch references inside the consumer skills under `skills/` — those live in the published library, not the user's repo.
 
 ### 3. Confirm and edit drafts
 
@@ -156,7 +156,7 @@ If an `## Agent skills` block already exists in the chosen file, update its cont
 
 #### 4c. Write the `## Agent skills` block
 
-Keep this block minimal. The chosen memory file (`CLAUDE.md` / `AGENTS.md`) loads into **every** agent session, so cost-per-token is highest here. Everything the block could spell out — the label vocabulary, the integration-branch rule, the domain layout, the initiative lifecycle, the output format — is already written once in `docs/agents/*` and restated in `docs/agents/README.md`, and every consuming skill (`/triage`, `/execute`, `/ship`, `/decompose`, `/status`, `/check`, `/audit`, `/to-spec`) links the relevant `docs/agents/*` doc and the ADR directly by relative path. An in-file copy is pure duplication that drifts. The block's only job is to point a fresh agent at the README and name the tracker.
+Keep this block minimal. The chosen memory file (`CLAUDE.md` / `AGENTS.md`) loads into **every** agent session, so cost-per-token is highest here. Everything the block could spell out — the label vocabulary, the integration-branch rule, the domain layout, the initiative lifecycle, the output format — is already written once in `docs/agents/*` and restated in `docs/agents/README.md`, and every consuming skill (`/triage`, `/ship`, `/decompose`, `/check`, `/audit`, `/to-spec`) links the relevant `docs/agents/*` doc and the ADR directly by relative path. An in-file copy is pure duplication that drifts. The block's only job is to point a fresh agent at the README and name the tracker.
 
 Default to the bare pointer:
 
@@ -223,11 +223,11 @@ After a fresh run in a previously-unconfigured repo, all of the following should
 3. `CLAUDE.md` (or `AGENTS.md`) has a bare `## Agent skills` block that points at `docs/agents/README.md` and names the tracker — no inline restatement of labels, branches, domain, lifecycle, or output format.
 4. `grep -rn "<owner>/<repo>" docs/` returns nothing.
 5. `gh label list` includes all seven state labels, `in-progress`, the four `size:*` labels, the three category labels (including `cleanup`), and the five `wayfinder:*` labels.
-6. `/wayfinder`, `/triage`, and `/execute` against fresh work run without complaining about missing doc paths.
+6. `/wayfinder`, `/triage`, and `/decompose` against fresh work run without complaining about missing doc paths.
 
 ## What this skill does NOT do
 
 - It does not edit the workflow skills under `skills/`. Those are the published library; the user's repo's `docs/agents/` is the configuration surface.
 - It does not seed `CONTEXT.md` or any ADR other than the integration-branch one. `/grill-with-docs` is the producer for both.
 - It does not create initial specs or initiatives. `/to-spec` is the producer.
-- It does not support tracker backends other than GitHub. Local markdown, Linear, Jira, and GitLab would need adapter work in the consumer skills (`/wayfinder`, `/triage`, `/decompose`, `/execute`, `/ship`, `/defer`, `/status`, `/to-spec`, `/audit`, `/check`, `/recap`) before they could be offered here. The local-markdown template file at `templates/agents/issue-tracker-local-markdown.md` is kept as forward-compatible scaffolding for that future work.
+- It does not support tracker backends other than GitHub. Local markdown, Linear, Jira, and GitLab would need adapter work in the consumer skills (`/wayfinder`, `/triage`, `/decompose`, `/ship`, `/to-spec`, `/audit`, `/check`) before they could be offered here. The local-markdown template file at `templates/agents/issue-tracker-local-markdown.md` is kept as forward-compatible scaffolding for that future work.

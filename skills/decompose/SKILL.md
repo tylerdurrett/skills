@@ -15,7 +15,7 @@ Tier-aware decomposition. Reads the input spec's `size:*` label and produces chi
 
 Children land with `size:<child-tier>` + `needs-triage` only. `/triage` handles per-child routing (state label, `needs-grilling` at the initiative→feature boundary, integration-branch declaration for `size:feature` / `size:slice`, sticky progress comment for `size:initiative`).
 
-This skill is the *writer*; `/execute` is the *runner*. Integration branches are not created on origin here. `/execute` seeds them lazily on first use, walking the parent chain per [ADR-0001](../../../docs/adr/0001-issues-branch-from-parent-integration-branch.md) (or the slot it landed in if `0001` was already taken).
+This skill is the *writer*; the execution driver (e.g. `/easy-auto`) is the *runner*. Integration branches are not created on origin here. They are seeded lazily on first use, walking the parent chain per [ADR-0001](../../../docs/adr/0001-issues-branch-from-parent-integration-branch.md) (or the slot it landed in if `0001` was already taken).
 
 For tracker mechanics see [docs/agents/issue-tracker.md](../../../docs/agents/issue-tracker.md); for label vocabulary see [docs/agents/triage-labels.md](../../../docs/agents/triage-labels.md); for the canonical end-of-run output see [docs/agents/output-format.md](../../../docs/agents/output-format.md).
 
@@ -25,7 +25,7 @@ For tracker mechanics see [docs/agents/issue-tracker.md](../../../docs/agents/is
 
 ## When NOT to use
 
-- The input is `size:task` (tasks are leaves; run `/execute` instead).
+- The input is `size:task` (tasks are leaves; run `/easy-auto` instead).
 - The input has no size label (run `/triage` first to size it).
 
 ## Process
@@ -44,7 +44,7 @@ Read the input's size label:
 - `size:feature` → produce `size:slice` children
 - `size:slice` → produce `size:task` children
 
-If the input has no size label or carries `size:task`, stop and tell the user. Recommend `/triage <N>` or `/execute <N>` respectively.
+If the input has no size label or carries `size:task`, stop and tell the user. Recommend `/triage <N>` or `/easy-auto <N>` respectively.
 
 ### 3. Ground the decomposition
 

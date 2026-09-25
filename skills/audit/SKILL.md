@@ -9,13 +9,13 @@ Cross-check a tier-bearing spec's decomposition against itself using two heterog
 
 `/check` on its own is single-agent and read-only — fast and useful, but it shares the spec author's blind spots with the reviewer. `/audit` runs `/check` twice in parallel — once as a Claude sub-agent and once as a Codex subprocess — then this orchestrating session synthesises both legs, drops findings that a later open child already addresses, draws a tight bar around what propagates upstream, walks the user through the surviving findings one at a time behind an explicit approval gate, and on approval lands the writes.
 
-`/check` is the faster path. Reach for `/audit` when the cost of a flawed decomposition is high enough to justify the second leg — typically right after `/decompose` publishes children, before any `/execute` runs.
+`/check` is the faster path. Reach for `/audit` when the cost of a flawed decomposition is high enough to justify the second leg — typically right after `/decompose` publishes children, before any task is implemented.
 
 For tracker mechanics see [docs/agents/issue-tracker.md](../../../docs/agents/issue-tracker.md); for label vocabulary see [docs/agents/triage-labels.md](../../../docs/agents/triage-labels.md); for the canonical end-of-run output see [docs/agents/output-format.md](../../../docs/agents/output-format.md).
 
 ## When to use
 
-- After `/decompose` publishes a spec's children, before kicking off `/execute` against the first task.
+- After `/decompose` publishes a spec's children, before kicking off `/easy-auto` against the first task.
 - After the maintainer hand-edits a spec body or a child body in a way that might have shifted coverage or scope.
 - When `/check` flagged nothing but you still suspect the decomposition might be wrong (single-agent blind spot).
 
@@ -322,7 +322,7 @@ Each draft uses the per-tier body template `/decompose` writes (feature template
 **Surfaced by:** /audit run on <tier> #<P>
 ```
 
-`<P>` is the audited spec's number. The `**Part of:**` line is the canonical greppable parent reference (read by `/execute`, `/decompose`, `/ship`, this skill's re-run dedupe). The `**Surfaced by:** /audit run on <tier> #<P>` marker is the audit-origin anchor — the dedupe key against existing native sub-issues of `<P>` on re-runs (see Step 10b).
+`<P>` is the audited spec's number. The `**Part of:**` line is the canonical greppable parent reference (read by `/decompose`, `/ship`, this skill's re-run dedupe). The `**Surfaced by:** /audit run on <tier> #<P>` marker is the audit-origin anchor — the dedupe key against existing native sub-issues of `<P>` on re-runs (see Step 10b).
 
 The new children will be created with `size:<child-tier>` + `needs-triage` so they enter the standard triage flow.
 
@@ -476,8 +476,8 @@ Pick the next-step skill from the lifecycle loop:
 - Findings remained and the maintainer needs to address them → `> Next step: resolve the findings above before continuing.` (no skill name).
 - Initiative / feature mode created new children → `> Next step: /triage #<first-new-child-N>. Audit added new children that need sizing and routing.`
 - Initiative / feature mode landed clean (or fully resolved) → `> Next step: /decompose <next-child-N>. Next iteration of the loop.`
-- Slice mode landed clean → `> Next step: /execute #<first-open-task-N>. First open task on the audited slice.`
-- Task mode landed clean → `> Next step: /execute #<N>. Audit found nothing tree-killing.`
+- Slice mode landed clean → `> Next step: /easy-auto #<first-open-task-N>. First open task on the audited slice.`
+- Task mode landed clean → `> Next step: /easy-auto #<N>. Audit found nothing tree-killing.`
 
 ## Failure modes
 
@@ -527,4 +527,4 @@ If the skill aborts mid-run, the file remains in `${TMPDIR:-/tmp}/` for forensic
 - It does not run automatically from `/decompose`. The integration is a printed nudge in `/decompose`'s end-of-run line — a visible recommendation to run this skill, never an auto-invocation. Auto-running would couple decomposition to Codex availability and add wall-clock cost to every `/decompose` run.
 - It does not auto-approve any finding, even nits. Every write is human-gated.
 - It does not re-run automatically when a body changes — every audit is a deliberate user invocation.
-- It does not drive `/execute` or `/decompose` afterward. The user picks up the next step.
+- It does not drive `/easy-auto` or `/decompose` afterward. The user picks up the next step.
