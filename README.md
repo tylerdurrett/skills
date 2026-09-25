@@ -92,6 +92,7 @@ A four-tier flow — initiative → feature → slice → task — that publishe
 | --- | --- |
 | [ai-sdk](skills/ai-sdk/) | Build features with the Vercel AI SDK (`generateText`, `streamText`, agents, RAG). |
 | [chrome-devtools](skills/chrome-devtools/) | Browser automation, perf analysis, and debugging via Puppeteer. |
+| [openrouter](skills/openrouter/) | Where the OpenRouter API key lives and how to call OpenRouter for text and images safely. |
 
 ### Media
 
